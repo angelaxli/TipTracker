@@ -29,8 +29,10 @@ export default function UploadTip() {
     notes: "",
   });
 
-  const { search } = useLocation(); //Use search property of useLocation
-  const editId = new URLSearchParams(search).get('edit');
+  const [location] = useLocation();
+  const searchParams = new URLSearchParams(location.split('?')[1] || '');
+  const editId = searchParams.get('edit');
+  const showScanner = searchParams.get("scan") === "true";
 
   const { data: tips, isLoading } = useQuery<Tip[]>({
     queryKey: ['/api/tips'],
@@ -51,10 +53,6 @@ export default function UploadTip() {
     date: format(new Date(), "yyyy-MM-dd'T'HH:mm"),
     notes: "",
   };
-
-  // Parse the URL search params (this part is kept to handle scanner functionality)
-  const searchParams = new URLSearchParams(window.location.search);
-  const showScanner = searchParams.get("scan") === "true";
 
   // Handle extracted data from receipt scanner (this part is kept)
   const handleExtractedData = (data: { amount: string; date: string }) => {

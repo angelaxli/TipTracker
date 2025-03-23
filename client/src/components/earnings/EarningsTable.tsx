@@ -38,8 +38,6 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tip, TipSource } from "@shared/schema";
-import { Link } from "wouter"; //Corrected import statement
-
 import { Link } from "wouter";
 
 export function EarningsTable() {
@@ -51,15 +49,6 @@ export function EarningsTable() {
   const [tipToDelete, setTipToDelete] = useState<number | null>(null);
   const itemsPerPage = 10;
   const { toast } = useToast();
-
-  const toggleSort = (field: "date" | "amount") => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
-    } else {
-      setSortField(field);
-      setSortDirection("desc");
-    }
-  };
 
   // Calculate date range for query
   const today = new Date();
