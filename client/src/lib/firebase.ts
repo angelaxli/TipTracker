@@ -12,19 +12,21 @@ import {
 import { apiRequest } from "@/lib/queryClient";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "",
-  authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID || ""}.firebaseapp.com`,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "",
-  storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID || ""}.appspot.com`,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "",
-  // Make sure redirect works properly in iframe environments like Replit
-  persistenceParams: { type: 'SESSION' }  
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: "tipsfortips-bd17d.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: "tipsfortips-bd17d.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 console.log("Firebase config:", {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY ? "Set" : "Not set",
   projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID ? "Set" : "Not set",
   appId: import.meta.env.VITE_FIREBASE_APP_ID ? "Set" : "Not set",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID ? "Set" : "Not set",
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID ? "Set" : "Not set",
 });
 
 // Initialize Firebase
