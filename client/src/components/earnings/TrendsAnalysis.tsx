@@ -416,9 +416,9 @@ export function TrendsAnalysis() {
                         <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
                         <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
                         <Tooltip 
-                          formatter={(value: number, name) => {
+                          formatter={(value: any, name) => {
                             if (name === "Count") return [value, name];
-                            return [`$${value.toFixed(2)}`, name];
+                            return [`$${typeof value === 'number' ? value.toFixed(2) : value}`, name];
                           }} 
                         />
                         <Legend />
@@ -473,7 +473,7 @@ export function TrendsAnalysis() {
                               />
                             ))}
                           </Pie>
-                          <Tooltip formatter={(value) => [`$${value.toFixed(2)}`, 'Amount']} />
+                          <Tooltip formatter={(value: any) => [`$${typeof value === 'number' ? value.toFixed(2) : value}`, 'Amount']} />
                           <Legend />
                         </PieChart>
                       </ResponsiveContainer>
@@ -489,7 +489,7 @@ export function TrendsAnalysis() {
                           <CartesianGrid strokeDasharray="3 3" />
                           <XAxis type="number" />
                           <YAxis dataKey="name" type="category" />
-                          <Tooltip formatter={(value: number) => [`$${value.toFixed(2)}`, 'Average']} />
+                          <Tooltip formatter={(value: any) => [`$${typeof value === 'number' ? value.toFixed(2) : value}`, 'Average']} />
                           <Legend />
                           <Bar dataKey="averageAmount" name="Average Tip" fill="#82ca9d" />
                         </BarChart>

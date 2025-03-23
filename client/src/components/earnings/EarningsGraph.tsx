@@ -362,9 +362,22 @@ export function EarningsGraph() {
               <CardContent className="p-4">
                 <p className="text-sm font-medium text-gray-500">Average</p>
                 <p className="text-2xl font-bold mt-1">
-                  ${(graphData.reduce((sum, item) => 
-                    sum + (showBySource ? item.total : item.earnings), 0) / 
-                    graphData.filter(item => (showBySource ? item.total : item.earnings) > 0).length || 1).toFixed(2)}
+                  ${(graphData.reduce((sum, item) => {
+                    if (showBySource && 'total' in item) {
+                      return sum + item.total;
+                    } else if (!showBySource && 'earnings' in item) {
+                      return sum + item.earnings;
+                    }
+                    return sum;
+                  }, 0) / 
+                  graphData.filter(item => {
+                    if (showBySource && 'total' in item) {
+                      return item.total > 0;
+                    } else if (!showBySource && 'earnings' in item) {
+                      return item.earnings > 0;
+                    }
+                    return false;
+                  }).length || 1).toFixed(2)}
                 </p>
               </CardContent>
             </Card>
@@ -373,8 +386,14 @@ export function EarningsGraph() {
               <CardContent className="p-4">
                 <p className="text-sm font-medium text-gray-500">Highest</p>
                 <p className="text-2xl font-bold mt-1">
-                  ${Math.max(...graphData.map(item => 
-                    showBySource ? item.total : item.earnings)).toFixed(2)}
+                  ${Math.max(...graphData.map(item => {
+                    if (showBySource && 'total' in item) {
+                      return item.total;
+                    } else if (!showBySource && 'earnings' in item) {
+                      return item.earnings;
+                    }
+                    return 0;
+                  })).toFixed(2)}
                 </p>
               </CardContent>
             </Card>
@@ -383,8 +402,14 @@ export function EarningsGraph() {
               <CardContent className="p-4">
                 <p className="text-sm font-medium text-gray-500">Days with Earnings</p>
                 <p className="text-2xl font-bold mt-1">
-                  {graphData.filter(item => 
-                    (showBySource ? item.total : item.earnings) > 0).length}
+                  {graphData.filter(item => {
+                    if (showBySource && 'total' in item) {
+                      return item.total > 0;
+                    } else if (!showBySource && 'earnings' in item) {
+                      return item.earnings > 0;
+                    }
+                    return false;
+                  }).length}
                 </p>
               </CardContent>
             </Card>
