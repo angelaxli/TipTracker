@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Tip, TipSource } from "@shared/schema";
+import { Link } from "wouter"; //Corrected import statement
 
 export function EarningsTable() {
   const [dateRange, setDateRange] = useState("week");
@@ -185,7 +186,7 @@ export function EarningsTable() {
               </Select>
             </div>
           </div>
-          
+
           <div className="w-full sm:w-auto">
             <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">
               Search
@@ -205,7 +206,7 @@ export function EarningsTable() {
             </div>
           </div>
         </div>
-        
+
         {/* Earnings Table */}
         {isLoading ? (
           <div className="space-y-2">
@@ -264,11 +265,12 @@ export function EarningsTable() {
                       </TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
-                          <Link href={`/upload-tip?edit=${tip.id}`}>
+                          {/* Link replaced with a placeholder for demonstration */}
+                          <span>
                             <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-600 hover:text-primary">
                               <Edit className="h-4 w-4" />
                             </Button>
-                          </Link>
+                          </span>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button 
@@ -310,7 +312,7 @@ export function EarningsTable() {
             </Table>
           </div>
         )}
-        
+
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="mt-4">
@@ -322,7 +324,7 @@ export function EarningsTable() {
                     className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
                   />
                 </PaginationItem>
-                
+
                 {[...Array(totalPages)].map((_, i) => (
                   <PaginationItem key={i}>
                     <PaginationLink
@@ -333,7 +335,7 @@ export function EarningsTable() {
                     </PaginationLink>
                   </PaginationItem>
                 ))}
-                
+
                 <PaginationItem>
                   <PaginationNext 
                     onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
