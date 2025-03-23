@@ -18,7 +18,7 @@ export const tips = pgTable("tips", {
   userId: integer("user_id").notNull().references(() => users.id),
   amount: doublePrecision("amount").notNull(),
   source: text("source", { enum: tipSources }).notNull(),
-  date: timestamp("date").notNull().defaultNow(),
+  date: text("date").notNull(),
   notes: text("notes"),
 });
 

@@ -183,7 +183,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Use demo user ID for demonstration
       const userId = DEMO_USER_ID;
-      const tipData = insertTipSchema.parse({ ...req.body, userId });
+      const { date, ...rest } = req.body;
+      const tipData = insertTipSchema.parse({ 
+        ...rest,
+        userId,
+        date: new Date(date).toISOString()
+      });
       const tip = await storage.createTip(tipData);
       res.status(201).json(tip);
     } catch (err) {
