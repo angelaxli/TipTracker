@@ -1,0 +1,28 @@
+#prepare imports
+!apt-get update
+!apt-get install -y tesseract-ocr
+!pip install pytesseract pillow
+
+import pytesseract
+from PIL import Image
+import os
+
+
+image_path = '/content/3_48_receipts.png'
+img = Image.open(image_path)
+text = pytesseract.image_to_string(img)
+print(text)
+
+import re
+tip_pattern = r'(TIP|Tip)\s+\$?(\d+\.\d{2})' 
+tips = re.findall(tip_pattern, text)
+
+tip_values = [float(tip[1]) for tip in tips]
+
+print(tip_values)
+
+date_pattern = r'\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s\d{2}/\d{2}/\d{4}\s\d{1,2}:\d{2}\s?(?:AM|PM|am|pm)\b'
+dates = re.findall(date_pattern, text)
+normalized_dates = [re.sub(r'\s?([ap])m\b', lambda m: f' {m.group(1).upper()}M', date, flags=re.IGNORECASE) for date in dates]
+
+print(normalized_dates)
