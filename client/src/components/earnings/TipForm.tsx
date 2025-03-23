@@ -79,7 +79,9 @@ export function TipForm({ initialData }: TipFormProps) {
         throw new Error("Invalid date format");
       }
       
-      await apiRequest("POST", "/api/tips", {
+      const method = initialData ? "PUT" : "POST";
+      const endpoint = initialData ? `/api/tips/${initialData.id}` : "/api/tips";
+      await apiRequest(method, endpoint, {
         amount: parseFloat(data.amount),
         source: data.source as "cash" | "venmo" | "credit_card" | "other",
         date: tipDate.toISOString(),

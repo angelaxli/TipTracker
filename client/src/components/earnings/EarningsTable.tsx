@@ -264,9 +264,11 @@ export function EarningsTable() {
                       </TableCell>
                       <TableCell>
                         <div className="flex space-x-2">
-                          <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-600 hover:text-primary">
-                            <Edit className="h-4 w-4" />
-                          </Button>
+                          <Link href={`/upload-tip?edit=${tip.id}`}>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-600 hover:text-primary">
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                          </Link>
                           <AlertDialog>
                             <AlertDialogTrigger asChild>
                               <Button 
