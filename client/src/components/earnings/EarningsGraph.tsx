@@ -68,13 +68,40 @@ export function EarningsGraph() {
       endDate = today;
   }
 
+  // Helper function to safely parse dates
+  const parseTipDate = (date: any): Date => {
+    if (!date) return new Date();
+    
+    if (date instanceof Date) return date;
+    
+    if (typeof date === 'string') {
+      return parseISO(date);
+    }
+    
+    // If it's an object with a toISOString or toString method
+    if (typeof date === 'object') {
+      if (typeof date.toISOString === 'function') {
+        return new Date(date.toISOString());
+      }
+      return new Date(date.toString());
+    }
+    
+    // Fallback
+    return new Date(date);
+  };
+
   // Process data based on the selected grouping
   const processData = () => {
-    if (!tips) return [];
+    if (!tips || !tips.length) return [];
     
     const filteredTips = tips.filter(tip => {
-      const tipDate = parseISO(tip.date.toString());
-      return tipDate >= startDate && tipDate <= endDate;
+      try {
+        const tipDate = parseTipDate(tip.date);
+        return tipDate >= startDate && tipDate <= endDate;
+      } catch (e) {
+        console.error("Error parsing date:", tip.date);
+        return false;
+      }
     });
     
     if (groupBy === "source") {
@@ -131,8 +158,13 @@ export function EarningsGraph() {
         
         const periodTotal = filteredTips
           .filter(tip => {
-            const tipDate = parseISO(tip.date.toString());
-            return tipDate >= periodStart && tipDate <= periodEnd;
+            try {
+              const tipDate = parseTipDate(tip.date);
+              return tipDate >= periodStart && tipDate <= periodEnd;
+            } catch (e) {
+              console.error("Error parsing date in period filter:", tip.date);
+              return false;
+            }
           })
           .reduce((sum, tip) => sum + tip.amount, 0);
         
@@ -169,14 +201,19 @@ export function EarningsGraph() {
     
     // Filter tips by selected date range
     const filteredTips = tips.filter(tip => {
-      const tipDate = parseISO(tip.date.toString());
-      return tipDate >= startDate && tipDate <= endDate;
+      try {
+        const tipDate = parseTipDate(tip.date);
+        return tipDate >= startDate && tipDate <= endDate;
+      } catch (e) {
+        console.error("Error parsing date for CSV export:", tip.date);
+        return false;
+      }
     });
     
     // Format the data as CSV
     const headers = ["Date", "Amount", "Source", "Notes"];
     const rows = filteredTips.map(tip => [
-      format(new Date(tip.date), "yyyy-MM-dd HH:mm:ss"),
+      format(parseTipDate(tip.date), "yyyy-MM-dd HH:mm:ss"),
       tip.amount.toFixed(2),
       tip.source,
       tip.notes || "",
