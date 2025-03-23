@@ -38,9 +38,21 @@ export function EarningsOverview() {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <EarningCard title="Today" amount={todayEarnings} isLoading={isLoading} />
-          <EarningCard title="This Week" amount={weekEarnings} isLoading={isLoading} />
-          <EarningCard title="This Month" amount={monthEarnings} isLoading={isLoading} />
+          <EarningCard 
+            title={`Today (${format(today, 'MMM d')})`}
+            amount={todayEarnings} 
+            isLoading={isLoading} 
+          />
+          <EarningCard 
+            title={`This Week (${format(weekStart, 'MMM d')} - ${format(weekEnd, 'MMM d')})`}
+            amount={weekEarnings} 
+            isLoading={isLoading} 
+          />
+          <EarningCard 
+            title={`This Month (${format(monthStart, 'MMM d')} - ${format(monthEnd, 'MMM d')})`}
+            amount={monthEarnings} 
+            isLoading={isLoading} 
+          />
         </div>
       </CardContent>
     </Card>
