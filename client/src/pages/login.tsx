@@ -1,30 +1,6 @@
 import { LoginForm } from "@/components/auth/LoginForm";
-import { useAuth } from "@/components/auth/AuthProvider";
-import { useLocation } from "wouter";
-import { useEffect } from "react";
 
-export default function Login() {
-  const { user, loading } = useAuth();
-  const [, setLocation] = useLocation();
-  
-  useEffect(() => {
-    if (user && !loading) {
-      setLocation("/");
-    }
-  }, [user, loading, setLocation]);
-  
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse h-8 w-8 rounded-full bg-primary/50"></div>
-      </div>
-    );
-  }
-  
-  if (user) {
-    return null;
-  }
-  
+export default function Login() {  
   return (
     <div 
       className="min-h-screen flex items-center justify-center bg-gray-50 p-4"

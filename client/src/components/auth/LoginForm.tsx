@@ -7,9 +7,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { loginWithEmailPassword, signInWithGoogle, registerWithEmailPassword } from "@/lib/firebase";
 import { useToast } from "@/hooks/use-toast";
-import { SiGoogle } from "react-icons/si";
+import { apiRequest } from "@/lib/queryClient";
+import { useLocation } from "wouter";
 
 const loginSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -22,6 +22,7 @@ export function LoginForm() {
   const [isLogin, setIsLogin] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -35,22 +36,29 @@ export function LoginForm() {
     setIsLoading(true);
     try {
       if (isLogin) {
-        await loginWithEmailPassword(data.email, data.password);
-        toast({
-          title: "Login successful",
-          description: "Welcome back to TipTracker!",
-        });
+        // Simulate login without Firebase
+        // In a real app, you would call your authentication endpoint
+        setTimeout(() => {
+          toast({
+            title: "Login successful",
+            description: "Welcome back to TipTracker!",
+          });
+          setLocation("/");
+        }, 1000);
       } else {
-        await registerWithEmailPassword(data.email, data.password);
-        toast({
-          title: "Registration successful",
-          description: "Your account has been created!",
-        });
+        // Simulate registration without Firebase
+        setTimeout(() => {
+          toast({
+            title: "Registration successful",
+            description: "Your account has been created!",
+          });
+          setLocation("/");
+        }, 1000);
       }
     } catch (error: any) {
       toast({
         title: "Authentication error",
-        description: error.message,
+        description: error?.message || "An unknown error occurred",
         variant: "destructive",
       });
     } finally {
@@ -58,20 +66,17 @@ export function LoginForm() {
     }
   };
 
-  const handleGoogleSignIn = async () => {
+  // Demo user login
+  const loginAsDemo = () => {
     setIsLoading(true);
-    try {
-      // For redirect-based auth, we won't get an immediate response
-      await signInWithGoogle();
-      // No need for toast here as the page will redirect and come back
-    } catch (error: any) {
-      setIsLoading(false);
+    setTimeout(() => {
       toast({
-        title: "Google sign-in error",
-        description: error.message,
-        variant: "destructive",
+        title: "Demo login successful",
+        description: "Welcome to TipTracker!",
       });
-    }
+      setLocation("/");
+      setIsLoading(false);
+    }, 1000);
   };
 
   return (
@@ -124,18 +129,17 @@ export function LoginForm() {
             <div className="w-full border-t border-gray-300"></div>
           </div>
           <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-background px-2 text-muted-foreground">Or continue with</span>
+            <span className="bg-background px-2 text-muted-foreground">Or</span>
           </div>
         </div>
 
         <Button
           variant="outline"
-          onClick={handleGoogleSignIn}
+          onClick={loginAsDemo}
           className="w-full flex items-center justify-center"
           disabled={isLoading}
         >
-          <SiGoogle className="mr-2 h-4 w-4" />
-          Sign in with Google
+          Continue as Demo User
         </Button>
       </CardContent>
       <CardFooter className="flex justify-center">
