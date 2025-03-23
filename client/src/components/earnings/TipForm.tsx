@@ -2,8 +2,21 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -30,10 +43,13 @@ export function TipForm({ initialData }: TipFormProps) {
   const [, navigate] = useLocation();
 
   const tipFormSchema = z.object({
-    amount: z.string().min(1, "Amount is required").refine(
-      (val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0,
-      "Amount must be a positive number"
-    ),
+    amount: z
+      .string()
+      .min(1, "Amount is required")
+      .refine(
+        (val) => !isNaN(parseFloat(val)) && parseFloat(val) > 0,
+        "Amount must be a positive number",
+      ),
     source: z.enum(tipSources, {
       errorMap: () => ({ message: "Please select a source" }),
     }),
@@ -58,27 +74,37 @@ export function TipForm({ initialData }: TipFormProps) {
   const onSubmit = async (data: TipFormValues) => {
     setIsSubmitting(true);
     try {
+      // Parse the date to ensure it's a valid Date object
+      const parsedDate = new Date(data.date); // Ensure this is a Date object
+
+      // Check if the parsed date is invalid
+      if (isNaN(parsedDate.getTime())) {
+        throw new Error("Invalid date");
+      }
+
+      // Send the request with the Date object
       await apiRequest("POST", "/api/tips", {
         amount: parseFloat(data.amount),
         source: data.source as "cash" | "venmo" | "credit_card" | "other",
-        date: new Date(data.date),
+        date: parsedDate, // Pass the Date object here
         notes: data.notes || null,
-        userId: 1 // Using demo user ID as specified in server/routes.ts
+        userId: 1, // Using demo user ID as specified in server/routes.ts
       });
-      
-      queryClient.invalidateQueries({ queryKey: ['/api/tips'] });
-      
+
+      queryClient.invalidateQueries({ queryKey: ["/api/tips"] });
+
       toast({
         title: "Success",
         description: "Your tip has been saved!",
       });
-      
+
       navigate("/");
     } catch (error: any) {
       console.error("Error saving tip:", error);
       toast({
         title: "Error",
-        description: error.message || "Failed to save your tip. Please try again.",
+        description:
+          error.message || "Failed to save your tip. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -89,7 +115,9 @@ export function TipForm({ initialData }: TipFormProps) {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg font-medium text-gray-800">Add New Tip</CardTitle>
+        <CardTitle className="text-lg font-medium text-gray-800">
+          Add New Tip
+        </CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -121,8 +149,8 @@ export function TipForm({ initialData }: TipFormProps) {
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Tip Source</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
+                  <Select
+                    onValueChange={field.onChange}
                     defaultValue={field.value}
                     disabled={isSubmitting}
                   >
