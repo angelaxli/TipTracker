@@ -3,8 +3,8 @@ import { Header } from "@/components/layout/Header";
 import { TipForm } from "@/components/earnings/TipForm";
 import { ReceiptScanner } from "@/components/earnings/ReceiptScanner";
 import { format } from "date-fns";
-import { useLocation } from 'react-router-dom'; // Added import
-import { useQuery } from '@tanstack/react-query'; // Added import
+import { useLocation } from 'wouter'; 
+import { useQuery } from '@tanstack/react-query';
 
 // Added type definition.  Replace with your actual type if different.
 type Tip = {

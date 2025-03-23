@@ -249,10 +249,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  return httpServer;
-}
+  // Uncomment and add these routes when implementing goal tracking features
 
-
+  /* 
   // Goal routes
   app.get("/api/goals", isAuthenticated, async (req, res) => {
     try {
@@ -285,3 +284,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Server error" });
     }
   });
+  */
+
+  return httpServer;
+}

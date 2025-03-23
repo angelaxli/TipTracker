@@ -35,7 +35,11 @@ export const insertTipSchema = createInsertSchema(tips).pick({
   amount: true,
   source: true,
   date: true,
+  notes: true,
+});
 
+// Uncomment these sections if you want to implement goal tracking features later
+/*
 export const goals = pgTable("goals", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").notNull().references(() => users.id),
@@ -62,9 +66,7 @@ export type Goal = typeof goals.$inferSelect;
 export type Achievement = typeof achievements.$inferSelect;
 export type InsertGoal = z.infer<typeof insertGoalSchema>;
 export type InsertAchievement = z.infer<typeof insertAchievementSchema>;
-
-  notes: true,
-});
+*/
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
