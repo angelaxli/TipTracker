@@ -61,8 +61,9 @@ export function TipForm({ initialData }: TipFormProps) {
       await apiRequest("POST", "/api/tips", {
         amount: parseFloat(data.amount),
         source: data.source,
-        date: new Date(data.date).toISOString(),
-        notes: data.notes || null,
+        date: new Date(data.date),
+        notes: data.notes || undefined,
+        userId: 1 // Using demo user ID as specified in server/routes.ts
       });
       
       queryClient.invalidateQueries({ queryKey: ['/api/tips'] });
@@ -74,9 +75,10 @@ export function TipForm({ initialData }: TipFormProps) {
       
       navigate("/");
     } catch (error: any) {
+      console.error("Error saving tip:", error);
       toast({
         title: "Error",
-        description: "Failed to save your tip. Please try again.",
+        description: error.message || "Failed to save your tip. Please try again.",
         variant: "destructive",
       });
     } finally {
