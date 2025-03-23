@@ -62,12 +62,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Auth middleware
+  // Auth middleware (disabled for demo)
   const isAuthenticated = (req: any, res: any, next: any) => {
-    if (req.isAuthenticated()) {
-      return next();
-    }
-    res.status(401).json({ message: "Unauthorized" });
+    // Always allow access in demo mode
+    return next();
   };
 
   // Auth routes
@@ -142,10 +140,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Demo user ID for demo mode
+  const DEMO_USER_ID = 1;
+
   // Tips routes
   app.get("/api/tips", isAuthenticated, async (req, res) => {
     try {
-      const userId = (req.user as any).id;
+      // Use demo user ID for demonstration
+      const userId = DEMO_USER_ID;
       const tips = await storage.getTipsByUserId(userId);
       res.json(tips);
     } catch (err) {
@@ -155,7 +157,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/tips/range", isAuthenticated, async (req, res) => {
     try {
-      const userId = (req.user as any).id;
+      // Use demo user ID for demonstration
+      const userId = DEMO_USER_ID;
       const { start, end } = req.query;
       
       if (!start || !end) {
@@ -178,7 +181,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/tips", isAuthenticated, async (req, res) => {
     try {
-      const userId = (req.user as any).id;
+      // Use demo user ID for demonstration
+      const userId = DEMO_USER_ID;
       const tipData = insertTipSchema.parse({ ...req.body, userId });
       const tip = await storage.createTip(tipData);
       res.status(201).json(tip);
@@ -193,7 +197,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put("/api/tips/:id", isAuthenticated, async (req, res) => {
     try {
-      const userId = (req.user as any).id;
+      // Use demo user ID for demonstration
+      const userId = DEMO_USER_ID;
       const tipId = parseInt(req.params.id);
       
       if (isNaN(tipId)) {
@@ -205,9 +210,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Tip not found" });
       }
       
-      if (existingTip.userId !== userId) {
-        return res.status(403).json({ message: "Not authorized to update this tip" });
-      }
+      // Skip authorization check in demo mode
       
       const tipUpdate = req.body;
       const updatedTip = await storage.updateTip(tipId, tipUpdate);
@@ -219,7 +222,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete("/api/tips/:id", isAuthenticated, async (req, res) => {
     try {
-      const userId = (req.user as any).id;
+      // Use demo user ID for demonstration
+      const userId = DEMO_USER_ID;
       const tipId = parseInt(req.params.id);
       
       if (isNaN(tipId)) {
@@ -231,9 +235,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Tip not found" });
       }
       
-      if (existingTip.userId !== userId) {
-        return res.status(403).json({ message: "Not authorized to delete this tip" });
-      }
+      // Skip authorization check in demo mode
       
       await storage.deleteTip(tipId);
       res.json({ message: "Tip deleted" });

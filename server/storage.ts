@@ -26,8 +26,73 @@ export class MemStorage implements IStorage {
   constructor() {
     this.users = new Map();
     this.tips = new Map();
-    this.userCurrentId = 1;
-    this.tipCurrentId = 1;
+    this.userCurrentId = 2; // Start at 2 because we'll add demo user with ID 1
+    this.tipCurrentId = 6; // Start at 6 because we'll add 5 sample tips
+    
+    // Add demo user
+    this.users.set(1, {
+      id: 1,
+      username: "demo",
+      email: "demo@example.com",
+      name: "Demo User",
+      password: "password",
+      firebaseUid: null,
+      createdAt: new Date(),
+    });
+    
+    // Add sample tips
+    const sampleTips = [
+      {
+        id: 1,
+        userId: 1,
+        amount: 24.50,
+        source: "cash",
+        date: new Date(2025, 2, 20), // March 20, 2025
+        notes: "Lunch shift",
+        createdAt: new Date()
+      },
+      {
+        id: 2,
+        userId: 1,
+        amount: 35.75,
+        source: "credit_card",
+        date: new Date(2025, 2, 21), // March 21, 2025
+        notes: "Dinner shift",
+        createdAt: new Date()
+      },
+      {
+        id: 3,
+        userId: 1,
+        amount: 18.25,
+        source: "venmo",
+        date: new Date(2025, 2, 22), // March 22, 2025
+        notes: "Breakfast shift",
+        createdAt: new Date()
+      },
+      {
+        id: 4,
+        userId: 1,
+        amount: 42.00,
+        source: "cash",
+        date: new Date(2025, 2, 22), // March 22, 2025
+        notes: "Evening shift",
+        createdAt: new Date()
+      },
+      {
+        id: 5,
+        userId: 1,
+        amount: 31.50,
+        source: "credit_card",
+        date: new Date(2025, 2, 23), // March 23, 2025
+        notes: "Afternoon shift",
+        createdAt: new Date()
+      }
+    ];
+    
+    // Add sample tips to the tips map
+    sampleTips.forEach(tip => {
+      this.tips.set(tip.id, tip);
+    });
   }
 
   // User methods
