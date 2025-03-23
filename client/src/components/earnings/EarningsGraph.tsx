@@ -100,7 +100,24 @@ export function EarningsGraph() {
     link.click();
   };
 
-  const prepareGraphData = () => {
+  // Define types for our graph data
+  type SimpleGraphData = {
+    date: string;
+    earnings: number;
+  };
+
+  type DetailedGraphData = {
+    date: string;
+    cash: number;
+    venmo: number;
+    credit_card: number;
+    other: number;
+    total: number;
+  };
+
+  type GraphData = SimpleGraphData | DetailedGraphData;
+
+  const prepareGraphData = (): GraphData[] => {
     if (!tips) return [];
 
     const interval = {
@@ -329,8 +346,14 @@ export function EarningsGraph() {
               <CardContent className="p-4">
                 <p className="text-sm font-medium text-gray-500">Total Earnings</p>
                 <p className="text-2xl font-bold mt-1">
-                  ${graphData.reduce((sum, item) => 
-                    sum + (showBySource ? item.total : item.earnings), 0).toFixed(2)}
+                  ${graphData.reduce((sum, item) => {
+                    if (showBySource && 'total' in item) {
+                      return sum + item.total;
+                    } else if (!showBySource && 'earnings' in item) {
+                      return sum + item.earnings;
+                    }
+                    return sum;
+                  }, 0).toFixed(2)}
                 </p>
               </CardContent>
             </Card>

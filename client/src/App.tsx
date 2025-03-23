@@ -7,6 +7,7 @@ import Dashboard from "@/pages/dashboard";
 import UploadTip from "@/pages/upload-tip";
 import EarningsLog from "@/pages/earnings-log";
 import EarningsGraphPage from "@/pages/earnings-graph";
+import TrendAnalysisPage from "@/pages/trend-analysis";
 import UploadSuccess from "@/pages/upload-success";
 import NotFound from "@/pages/not-found";
 
@@ -19,6 +20,7 @@ function Router() {
       <Route path="/upload-success" component={UploadSuccess} />
       <Route path="/earnings-log" component={EarningsLog} />
       <Route path="/earnings-graph" component={EarningsGraphPage} />
+      <Route path="/trend-analysis" component={TrendAnalysisPage} />
       <Route component={NotFound} />
     </Switch>
   );
