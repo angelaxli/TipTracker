@@ -370,9 +370,11 @@ export function TrendsAnalysis() {
                         <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
                         <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
                         <Tooltip 
-                          formatter={(value: number, name) => {
-                            if (name === "Average Tip") return [`$${value.toFixed(2)}`, name];
-                            return [`$${value.toFixed(2)}`, name];
+                          formatter={(value: any, name) => {
+                            if (typeof value === 'number') {
+                              return [`$${value.toFixed(2)}`, name];
+                            }
+                            return [value, name];
                           }} 
                         />
                         <Legend />
@@ -535,9 +537,11 @@ export function TrendsAnalysis() {
                         <YAxis yAxisId="left" orientation="left" stroke="#8884d8" />
                         <YAxis yAxisId="right" orientation="right" stroke="#82ca9d" />
                         <Tooltip 
-                          formatter={(value: number, name) => {
-                            if (name === "Average Tip") return [`$${value.toFixed(2)}`, name];
-                            return [`$${value.toFixed(2)}`, name];
+                          formatter={(value: any, name) => {
+                            if (typeof value === 'number') {
+                              return [`$${value.toFixed(2)}`, name];
+                            }
+                            return [value, name];
                           }} 
                         />
                         <Legend />
