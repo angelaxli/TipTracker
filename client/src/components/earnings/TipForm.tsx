@@ -61,7 +61,7 @@ export function TipForm({ initialData }: TipFormProps) {
       await apiRequest("POST", "/api/tips", {
         amount: parseFloat(data.amount),
         source: data.source,
-        date: new Date(data.date),
+        date: new Date(data.date).toISOString(),
         notes: data.notes || undefined,
         userId: 1 // Using demo user ID as specified in server/routes.ts
       });
