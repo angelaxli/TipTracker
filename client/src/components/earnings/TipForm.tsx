@@ -82,7 +82,7 @@ export function TipForm({ initialData }: TipFormProps) {
       await apiRequest("POST", "/api/tips", {
         amount: parseFloat(data.amount),
         source: data.source as "cash" | "venmo" | "credit_card" | "other",
-        date: tipDate,
+        date: tipDate.toISOString(),
         notes: data.notes || null,
         userId: 1, // Using demo user ID as specified in server/routes.ts
       });
