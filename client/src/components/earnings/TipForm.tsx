@@ -61,8 +61,8 @@ export function TipForm({ initialData }: TipFormProps) {
       await apiRequest("POST", "/api/tips", {
         amount: parseFloat(data.amount),
         source: data.source,
-        date: new Date(data.date),
-        notes: data.notes,
+        date: new Date(data.date).toISOString(),
+        notes: data.notes || null,
       });
       
       queryClient.invalidateQueries({ queryKey: ['/api/tips'] });
