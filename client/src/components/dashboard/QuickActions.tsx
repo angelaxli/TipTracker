@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "wouter";
-import { PlusCircle, FileText } from "lucide-react";
+import { PlusCircle, FileText, BarChart2, List } from "lucide-react";
 
 export function QuickActions() {
   return (
@@ -26,6 +26,26 @@ export function QuickActions() {
               <div>
                 <h3 className="font-medium text-gray-800">Scan Receipt</h3>
                 <p className="text-sm text-gray-600">Extract tip information from a receipt</p>
+              </div>
+            </div>
+          </Link>
+          
+          <Link href="/earnings-graph">
+            <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow duration-200 cursor-pointer flex items-center">
+              <BarChart2 className="text-primary h-6 w-6 mr-4" />
+              <div>
+                <h3 className="font-medium text-gray-800">Graph View</h3>
+                <p className="text-sm text-gray-600">Visualize your earnings data</p>
+              </div>
+            </div>
+          </Link>
+          
+          <Link href="/earnings-log">
+            <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow duration-200 cursor-pointer flex items-center">
+              <List className="text-primary h-6 w-6 mr-4" />
+              <div>
+                <h3 className="font-medium text-gray-800">Earnings Log</h3>
+                <p className="text-sm text-gray-600">View detailed earnings history</p>
               </div>
             </div>
           </Link>
