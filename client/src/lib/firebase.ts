@@ -1,5 +1,14 @@
 import { initializeApp } from "firebase/app";
-import { getAuth, signInWithPopup, signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signOut, User } from "firebase/auth";
+import { 
+  getAuth, 
+  signInWithRedirect, 
+  getRedirectResult,
+  signInWithEmailAndPassword, 
+  createUserWithEmailAndPassword, 
+  GoogleAuthProvider, 
+  signOut, 
+  User 
+} from "firebase/auth";
 import { apiRequest } from "@/lib/queryClient";
 
 const firebaseConfig = {
@@ -10,17 +19,37 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID || "",
 };
 
+console.log("Firebase config:", {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY ? "Set" : "Not set",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID ? "Set" : "Not set",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID ? "Set" : "Not set",
+});
+
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 
+// Check for redirect result on page load
+export const checkRedirectResult = async () => {
+  try {
+    const result = await getRedirectResult(auth);
+    if (result) {
+      const user = result.user;
+      await syncUserWithBackend(user);
+      return user;
+    }
+    return null;
+  } catch (error: any) {
+    console.error("Error processing redirect result: ", error);
+    throw new Error(error.message);
+  }
+};
+
 export const signInWithGoogle = async () => {
   try {
-    const result = await signInWithPopup(auth, googleProvider);
-    const user = result.user;
-    await syncUserWithBackend(user);
-    return user;
+    await signInWithRedirect(auth, googleProvider);
+    // The result will be handled in checkRedirectResult
   } catch (error: any) {
     console.error("Error signing in with Google: ", error);
     throw new Error(error.message);

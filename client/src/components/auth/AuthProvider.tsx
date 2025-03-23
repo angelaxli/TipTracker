@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { auth } from "@/lib/firebase";
+import { auth, checkRedirectResult } from "@/lib/firebase";
 import { User as FirebaseUser, onAuthStateChanged } from "firebase/auth";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
@@ -19,6 +19,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
   const { toast } = useToast();
 
+  // Check for redirect result when component mounts
+  useEffect(() => {
+    const handleRedirectResult = async () => {
+      try {
+        await checkRedirectResult();
+      } catch (error: any) {
+        console.error("Error checking redirect result:", error);
+        toast({
+          title: "Authentication Error",
+          description: error.message || "Error during authentication redirect",
+          variant: "destructive",
+        });
+      }
+    };
+
+    handleRedirectResult();
+  }, [toast]);
+
   // Check if the user is logged in with Firebase
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
@@ -34,14 +52,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     queryKey: ['/api/auth/current-user'],
     enabled: !!user,
     staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: false,
-    onError: (err) => {
-      toast({
-        title: "Authentication Error",
-        description: "Error validating your session. Please log in again.",
-        variant: "destructive",
-      });
-    }
+    retry: false
   });
 
   return (

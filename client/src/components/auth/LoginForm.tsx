@@ -61,19 +61,16 @@ export function LoginForm() {
   const handleGoogleSignIn = async () => {
     setIsLoading(true);
     try {
+      // For redirect-based auth, we won't get an immediate response
       await signInWithGoogle();
-      toast({
-        title: "Login successful",
-        description: "Welcome to TipTracker!",
-      });
+      // No need for toast here as the page will redirect and come back
     } catch (error: any) {
+      setIsLoading(false);
       toast({
         title: "Google sign-in error",
         description: error.message,
         variant: "destructive",
       });
-    } finally {
-      setIsLoading(false);
     }
   };
 
