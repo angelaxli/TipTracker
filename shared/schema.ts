@@ -35,6 +35,34 @@ export const insertTipSchema = createInsertSchema(tips).pick({
   amount: true,
   source: true,
   date: true,
+
+export const goals = pgTable("goals", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  targetAmount: doublePrecision("target_amount").notNull(),
+  period: text("period", { enum: ["daily", "weekly", "monthly"] }).notNull(),
+  startDate: text("start_date").notNull(),
+  endDate: text("end_date").notNull(),
+  completed: boolean("completed").notNull().default(false),
+});
+
+export const achievements = pgTable("achievements", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull().references(() => users.id),
+  type: text("type", { enum: ["streak", "milestone", "goal_complete"] }).notNull(),
+  name: text("name").notNull(),
+  description: text("description").notNull(),
+  earnedAt: timestamp("earned_at").notNull(),
+});
+
+export const insertGoalSchema = createInsertSchema(goals);
+export const insertAchievementSchema = createInsertSchema(achievements);
+
+export type Goal = typeof goals.$inferSelect;
+export type Achievement = typeof achievements.$inferSelect;
+export type InsertGoal = z.infer<typeof insertGoalSchema>;
+export type InsertAchievement = z.infer<typeof insertAchievementSchema>;
+
   notes: true,
 });
 

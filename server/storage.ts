@@ -9,6 +9,17 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   
   // Tip methods
+
+  // Goal methods
+  getGoals(userId: number): Promise<Goal[]>;
+  createGoal(goal: InsertGoal): Promise<Goal>;
+  updateGoal(id: number, goal: Partial<InsertGoal>): Promise<Goal | undefined>;
+  deleteGoal(id: number): Promise<boolean>;
+  
+  // Achievement methods
+  getAchievements(userId: number): Promise<Achievement[]>;
+  createAchievement(achievement: InsertAchievement): Promise<Achievement>;
+
   getTip(id: number): Promise<Tip | undefined>;
   getTipsByUserId(userId: number): Promise<Tip[]>;
   getTipsByUserIdAndDateRange(userId: number, startDate: Date, endDate: Date): Promise<Tip[]>;
@@ -166,6 +177,46 @@ export class MemStorage implements IStorage {
   async updateTip(id: number, tipUpdate: Partial<InsertTip>): Promise<Tip | undefined> {
     const existingTip = this.tips.get(id);
     if (!existingTip) return undefined;
+
+  // Goal methods
+  async getGoals(userId: number): Promise<Goal[]> {
+    return Array.from(this.goals.values()).filter(goal => goal.userId === userId);
+  }
+
+  async createGoal(goal: InsertGoal): Promise<Goal> {
+    const id = this.goalCurrentId++;
+    const newGoal = { ...goal, id };
+    this.goals.set(id, newGoal);
+    return newGoal;
+  }
+
+  async updateGoal(id: number, goalUpdate: Partial<InsertGoal>): Promise<Goal | undefined> {
+    const existingGoal = this.goals.get(id);
+    if (!existingGoal) return undefined;
+    
+    const updatedGoal = { ...existingGoal, ...goalUpdate };
+    this.goals.set(id, updatedGoal);
+    return updatedGoal;
+  }
+
+  async deleteGoal(id: number): Promise<boolean> {
+    return this.goals.delete(id);
+  }
+
+  // Achievement methods
+  async getAchievements(userId: number): Promise<Achievement[]> {
+    return Array.from(this.achievements.values()).filter(
+      achievement => achievement.userId === userId
+    );
+  }
+
+  async createAchievement(achievement: InsertAchievement): Promise<Achievement> {
+    const id = this.achievementCurrentId++;
+    const newAchievement = { ...achievement, id };
+    this.achievements.set(id, newAchievement);
+    return newAchievement;
+  }
+
     
     const updatedTip = { ...existingTip, ...tipUpdate };
     this.tips.set(id, updatedTip);

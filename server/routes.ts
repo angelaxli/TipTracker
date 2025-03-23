@@ -251,3 +251,37 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   return httpServer;
 }
+
+
+  // Goal routes
+  app.get("/api/goals", isAuthenticated, async (req, res) => {
+    try {
+      const userId = DEMO_USER_ID;
+      const goals = await storage.getGoals(userId);
+      res.json(goals);
+    } catch (err) {
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  app.post("/api/goals", isAuthenticated, async (req, res) => {
+    try {
+      const userId = DEMO_USER_ID;
+      const goalData = { ...req.body, userId };
+      const goal = await storage.createGoal(goalData);
+      res.status(201).json(goal);
+    } catch (err) {
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Achievement routes
+  app.get("/api/achievements", isAuthenticated, async (req, res) => {
+    try {
+      const userId = DEMO_USER_ID;
+      const achievements = await storage.getAchievements(userId);
+      res.json(achievements);
+    } catch (err) {
+      res.status(500).json({ message: "Server error" });
+    }
+  });
