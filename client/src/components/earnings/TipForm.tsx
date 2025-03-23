@@ -74,10 +74,15 @@ export function TipForm({ initialData }: TipFormProps) {
   const onSubmit = async (data: TipFormValues) => {
     setIsSubmitting(true);
     try {
+      const tipDate = new Date(data.date);
+      if (isNaN(tipDate.getTime())) {
+        throw new Error("Invalid date format");
+      }
+      
       await apiRequest("POST", "/api/tips", {
         amount: parseFloat(data.amount),
         source: data.source as "cash" | "venmo" | "credit_card" | "other",
-        date: new Date(data.date).toISOString(),
+        date: tipDate,
         notes: data.notes || null,
         userId: 1, // Using demo user ID as specified in server/routes.ts
       });
