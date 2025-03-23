@@ -1,14 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Header } from "@/components/layout/Header";
 import { TipForm } from "@/components/earnings/TipForm";
 import { ReceiptScanner } from "@/components/earnings/ReceiptScanner";
-import { useAuth } from "@/components/auth/AuthProvider";
-import { useLocation } from "wouter";
 import { format } from "date-fns";
 
 export default function UploadTip() {
-  const { user, loading } = useAuth();
-  const [location, setLocation] = useLocation();
   const [formData, setFormData] = useState<{
     amount: string;
     source: string;
@@ -24,12 +20,6 @@ export default function UploadTip() {
   // Parse the URL search params
   const searchParams = new URLSearchParams(window.location.search);
   const showScanner = searchParams.get("scan") === "true";
-  
-  useEffect(() => {
-    if (!user && !loading) {
-      setLocation("/login");
-    }
-  }, [user, loading, setLocation]);
 
   // Handle extracted data from receipt scanner
   const handleExtractedData = (data: { amount: string; date: string }) => {
@@ -53,25 +43,19 @@ export default function UploadTip() {
     setFormData(updatedData);
   };
   
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-pulse h-8 w-8 rounded-full bg-primary/50"></div>
-      </div>
-    );
-  }
-  
-  if (!user) {
-    return null;
-  }
-  
   return (
     <div className="min-h-screen bg-gray-50">
       <Header showBackButton title="Upload Tip" />
       
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-6">
-        <TipForm initialData={formData} />
-        <ReceiptScanner onExtractedData={handleExtractedData} />
+        {showScanner ? (
+          <div className="space-y-6">
+            <ReceiptScanner onExtractedData={handleExtractedData} />
+            <TipForm initialData={formData} />
+          </div>
+        ) : (
+          <TipForm initialData={formData} />
+        )}
       </main>
     </div>
   );
