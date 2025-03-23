@@ -55,7 +55,12 @@ export class MemStorage implements IStorage {
 
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = this.userCurrentId++;
-    const user: User = { ...insertUser, id };
+    const user: User = { 
+      ...insertUser, 
+      id,
+      name: insertUser.name ?? null,
+      firebaseUid: insertUser.firebaseUid ?? null 
+    };
     this.users.set(id, user);
     return user;
   }
@@ -81,7 +86,14 @@ export class MemStorage implements IStorage {
 
   async createTip(insertTip: InsertTip): Promise<Tip> {
     const id = this.tipCurrentId++;
-    const tip: Tip = { ...insertTip, id };
+    // Ensure date is properly set
+    const currentDate = new Date();
+    const tip: Tip = { 
+      ...insertTip, 
+      id,
+      notes: insertTip.notes ?? null,
+      date: insertTip.date ? insertTip.date : currentDate
+    };
     this.tips.set(id, tip);
     return tip;
   }
