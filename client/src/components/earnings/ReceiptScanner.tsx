@@ -142,10 +142,10 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
         }
 
         const tipData = {
-          amount: tipAmount,
+          amount: parseFloat(tipAmount.toFixed(2)),
           date: new Date(item.date || new Date()).toISOString(),
-          source: "cash",
-          notes: "",
+          source: item.source || "cash",
+          notes: item.notes || "",
           userId: 1
         };
 
@@ -246,16 +246,35 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
                           </div>
                         ))}
                       </div>
-                      <textarea
-                        className="w-full p-2 text-sm border rounded"
-                        placeholder="Add notes about this tip..."
-                        value={notes[index] || ''}
-                        onChange={(e) => {
-                          const newNotes = [...notes];
-                          newNotes[index] = e.target.value;
-                          setNotes(newNotes);
-                        }}
-                      />
+                      <div className="space-y-2">
+                        <select
+                          className="w-full p-2 text-sm border rounded"
+                          value={receipt[0]?.source || "cash"}
+                          onChange={(e) => {
+                            const newReceipts = [...scannedReceipts];
+                            newReceipts[index] = receipt.map(item => ({
+                              ...item,
+                              source: e.target.value
+                            }));
+                            setScannedReceipts(newReceipts);
+                          }}
+                        >
+                          <option value="cash">Cash</option>
+                          <option value="venmo">Venmo</option>
+                          <option value="credit_card">Credit Card</option>
+                          <option value="other">Other</option>
+                        </select>
+                        <textarea
+                          className="w-full p-2 text-sm border rounded"
+                          placeholder="Add notes about this tip..."
+                          value={notes[index] || ''}
+                          onChange={(e) => {
+                            const newNotes = [...notes];
+                            newNotes[index] = e.target.value;
+                            setNotes(newNotes);
+                          }}
+                        />
+                      </div>
                       <div className="flex justify-end space-x-2">
                         <Button
                           variant="outline"
