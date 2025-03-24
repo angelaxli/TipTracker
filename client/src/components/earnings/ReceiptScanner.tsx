@@ -69,6 +69,9 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
             // Only add if we found a tip
             if (tipMatch) {
               const date = dateMatch ? new Date(dateMatch[0]) : new Date();
+              // Set time to current time when date is from receipt
+              date.setHours(new Date().getHours());
+              date.setMinutes(new Date().getMinutes());
               const formattedDate = format(date, "yyyy-MM-dd'T'HH:mm");
               extractedResults.push({
                 amount: tipMatch[2],
