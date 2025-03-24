@@ -374,9 +374,12 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
                                   throw new Error("Invalid amount format");
                                 }
 
+                                // Format date to match TipForm exactly
+                                const formattedDate = format(tipDate, "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+
                                 const tipToSave = {
                                   ...item,
-                                  date: format(tipDate, "yyyy-MM-dd'T'HH:mm"),
+                                  date: formattedDate,
                                   amount: amount
                                 };
                                 await handleUseData([tipToSave]);
