@@ -54,20 +54,31 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
 
           // Process each section as a potential receipt
           for (const section of sections) {
-            // Using similar pattern to the Python code
-            const tipPattern = /(TIP|Tip)\s+\$?(\d+\.\d{2})/g;
+            // Enhanced tip pattern to catch more formats
+            const tipPattern = /(?:TIP|Tip|GRAT|Gratuity|GRATUITY)[\s:]*[$]?\s*(\d+[\.,]\d{2})/gi;
             const tipMatches = Array.from(section.matchAll(tipPattern));
             
-            const datePattern = /\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s\d{2}\/\d{2}\/\d{4}\s\d{1,2}:\d{2}\s?(?:AM|PM|am|pm)\b/g;
+            // Enhanced date pattern to catch more formats
+            const datePattern = /(?:\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4}|\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{1,2},?\s+\d{4}|\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)[a-z]*\.?\s+\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})\s*(?:\d{1,2}:\d{2}(?::\d{2})?\s*(?:AM|PM|am|pm)?)?/g;
             const dates = Array.from(section.matchAll(datePattern))
               .map(match => {
-                // Normalize AM/PM similar to Python code
-                return match[0].replace(/\s?([ap])m\b/i, (_, p1) => ` ${p1.toUpperCase()}M`);
-              });
+                try {
+                  const dateStr = match[0].trim();
+                  const parsedDate = new Date(dateStr);
+                  return !isNaN(parsedDate.getTime()) ? dateStr : null;
+                } catch {
+                  return null;
+                }
+              })
+              .filter(date => date !== null);
 
             // Match tips with dates
             for (let i = 0; i < tipMatches.length; i++) {
-              const tipAmount = tipMatches[i][1];
+              let tipAmount = tipMatches[i][1];
+              // Clean up tip amount (handle commas, multiple decimals)
+              tipAmount = tipAmount.replace(',', '.');
+              tipAmount = tipAmount.match(/\d+\.?\d*/)?.[0] || '';
+              
               const date = dates[i] || dates[0] || new Date().toISOString();
               
               if (tipAmount && !isNaN(parseFloat(tipAmount))) {
