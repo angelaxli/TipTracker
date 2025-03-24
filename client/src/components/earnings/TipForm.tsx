@@ -81,13 +81,24 @@ export function TipForm({ initialData }: TipFormProps) {
       
       const method = initialData ? "PUT" : "POST";
       const endpoint = initialData ? `/api/tips/${initialData.id}` : "/api/tips";
-      await apiRequest(method, endpoint, {
-        amount: parseFloat(data.amount),
-        source: data.source as "cash" | "venmo" | "credit_card" | "other",
-        date: tipDate.toISOString(),
-        notes: data.notes || null,
-        userId: 1, // Using demo user ID as specified in server/routes.ts
+      const response = await fetch(endpoint, {
+        method,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          amount: parseFloat(data.amount),
+          source: data.source,
+          date: tipDate.toISOString(),
+          notes: data.notes || "",
+          userId: 1
+        })
       });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Failed to save tip');
+      }
 
       queryClient.invalidateQueries({ queryKey: ["/api/tips"] });
 
