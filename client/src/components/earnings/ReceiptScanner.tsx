@@ -210,7 +210,17 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
                           setNotes(newNotes);
                         }}
                       />
-                      <div className="flex justify-end">
+                      <div className="flex justify-end space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setScannedReceipts(scannedReceipts.filter((_, i) => i !== index));
+                            setNotes(notes.filter((_, i) => i !== index));
+                          }}
+                        >
+                          Cancel
+                        </Button>
                         <Button
                           variant="outline"
                           size="sm"
