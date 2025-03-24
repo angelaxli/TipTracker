@@ -3,7 +3,7 @@ import { useState, useRef } from "react";
 import { Upload } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import Tesseract from "tesseract.js";
 
 interface ReceiptScannerProps {
