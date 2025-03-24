@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { queryClient } from "@/lib/queryClient";
 import Tesseract from "tesseract.js";
 
 // Define a Receipt type for better type checking
@@ -137,11 +136,16 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
   const handleUseData = async (receipt: Receipt[]) => {
     try {
       for (const item of receipt) {
+        const tipAmount = Number(item.amount);
+        if (isNaN(tipAmount) || tipAmount <= 0) {
+          throw new Error("Invalid tip amount");
+        }
+
         const tipData = {
-          amount: Number(item.amount) || 0,
+          amount: tipAmount,
           date: new Date(item.date || new Date()).toISOString(),
           source: "cash",
-          notes: item.notes || "",
+          notes: "",
           userId: 1
         };
 
@@ -167,7 +171,10 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
         description: "Receipt data has been saved successfully.",
       });
 
-      window.location.href = '/earnings-log';
+      // After successful save, redirect to earnings log
+      setTimeout(() => {
+        window.location.href = '/earnings-log';
+      }, 1000);
     } catch (error) {
       console.error("Error saving tip:", error);
       toast({
