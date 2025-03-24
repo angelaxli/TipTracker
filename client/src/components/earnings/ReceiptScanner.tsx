@@ -44,24 +44,29 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
           const result = await Tesseract.recognize(file, "eng");
           const text = result.data.text;
 
-          // Split text into potential receipt sections based on common delimiters and receipt markers
-          const receiptSections = text.split(/(?:\n\s*\n|\*{3,}|\-{3,}|\={3,}|(?=\b(?:check|receipt|invoice|order)\b))/gi)
-            .filter(section => section.trim().length > 0);
+          // Improved tip pattern matching
+          const tipRegex = /(TIP|Tip)\s+\$?(\d+\.\d{2})/gi;
+          const tipMatches = Array.from(text.matchAll(tipRegex));
+          
+          // Improved date pattern matching
+          const dateRegex = /\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s\d{2}\/\d{2}\/\d{4}\s\d{1,2}:\d{2}\s?(?:AM|PM|am|pm)\b/g;
+          const dates = Array.from(text.matchAll(dateRegex))
+            .map(match => match[0].replace(/\s?([ap])m\b/i, (_, p1) => ` ${p1.toUpperCase()}M`));
 
           const extractedResults: Receipt[] = [];
-
-          for (const section of receiptSections) {
-            // Find all tip amounts in the section
-            const tipRegex = /(?:tip|gratuity|tip amount|grat)(?:\s*[:\.]\s*|\s+)\$?(\d+\.\d{2})/gi;
-            const tipMatches = Array.from(section.matchAll(tipRegex));
-
-            // Find all dates in the section
-            const dateRegex = /(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})|([A-Z][a-z]{2}\s\d{1,2},?\s\d{4})/g;
-            const dates = Array.from(section.matchAll(dateRegex)).map(match => match[0]);
-
-            // Try to find time if available
-            const timeRegex = /(\d{1,2}:\d{2}(?:\s*[AaPp][Mm])?)/g;
-            const times = Array.from(section.matchAll(timeRegex)).map(match => match[0]);
+          
+          // Match tips with dates
+          tipMatches.forEach((tipMatch, index) => {
+            const tipAmount = tipMatch[2];
+            const date = dates[index] || dates[0] || new Date().toISOString();
+            
+            if (tipAmount) {
+              extractedResults.push({
+                amount: tipAmount,
+                date: date,
+              });
+            }
+          });
 
             // For each tip amount found, create a receipt entry
             tipMatches.forEach((tipMatch, index) => {
