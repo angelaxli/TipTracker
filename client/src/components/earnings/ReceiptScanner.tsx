@@ -35,34 +35,25 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
       const result = await Tesseract.recognize(file, "eng");
       const text = result.data.text;
       
-      // Extract amount - looking for patterns like $XX.XX or XX.XX
-      const amountRegex = /\$?(\d+\.\d{2})/g;
-      const amounts = [];
-      let match;
-      
-      while ((match = amountRegex.exec(text)) !== null) {
-        amounts.push(match[1]);
-      }
-      
+      // Extract tip amount - looking for patterns like "Tip: $XX.XX" or "Gratuity: XX.XX"
+      const tipRegex = /(?:tip|gratuity|tip amount|grat)(?:\s*[:\.]\s*|\s+)\$?(\d+\.\d{2})/i;
+      const tipMatch = text.match(tipRegex);
+      const tipAmount = tipMatch ? tipMatch[1] : "";
+
       // Extract date - looking for common date formats
       const dateRegex = /(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})|([A-Z][a-z]{2}\s\d{1,2},?\s\d{4})/g;
       const dates = [];
+      let match;
       
       while ((match = dateRegex.exec(text)) !== null) {
         dates.push(match[0]);
       }
-      
-      // Use the largest amount as the tip amount (as a simple heuristic)
-      // In a real app, we'd want more sophisticated logic
-      const largestAmount = amounts.length > 0 
-        ? Math.max(...amounts.map(a => parseFloat(a))).toFixed(2) 
-        : "";
         
       // Use the first found date
       const firstDate = dates.length > 0 ? dates[0] : "";
       
       const extractedResult = {
-        amount: largestAmount,
+        amount: tipAmount,
         date: firstDate,
       };
       
