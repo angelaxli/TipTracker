@@ -1,4 +1,3 @@
-
 import { useState, useRef } from "react";
 import { Upload } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -57,7 +56,7 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
             // Enhanced tip pattern to catch more formats
             const tipPattern = /(?:TIP|Tip|GRAT|Gratuity|GRATUITY)[\s:]*[$]?\s*(\d+[\.,]\d{2})/gi;
             const tipMatches = Array.from(section.matchAll(tipPattern));
-            
+
             // Enhanced date pattern to catch more formats
             const datePattern = /(?:\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4}|\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{1,2},?\s+\d{4}|\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)[a-z]*\.?\s+\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})\s*(?:\d{1,2}:\d{2}(?::\d{2})?\s*(?:AM|PM|am|pm)?)?/g;
             const dates = Array.from(section.matchAll(datePattern))
@@ -74,13 +73,20 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
 
             // Match tips with dates
             for (let i = 0; i < tipMatches.length; i++) {
-              let tipAmount = tipMatches[i][1];
-              // Clean up tip amount (handle commas, multiple decimals)
-              tipAmount = tipAmount.replace(',', '.');
-              tipAmount = tipAmount.match(/\d+\.?\d*/)?.[0] || '';
-              
+              let tipAmount = '';
+              // Extract tip amount from either capture group
+              if (tipMatches[i][1]) {
+                tipAmount = tipMatches[i][1].replace(',', '.');
+              } else if (tipMatches[i][0]) {
+                // Extract amount from full match if needed
+                tipAmount = tipMatches[i][0].match(/\d+\.?\d*/)?.[0] || '';
+              }
+
+              // Clean up tip amount
+              tipAmount = tipAmount.replace(/[^\d.]/g, '');
+
               const date = dates[i] || dates[0] || new Date().toISOString();
-              
+
               if (tipAmount && !isNaN(parseFloat(tipAmount))) {
                 extractedResults.push({
                   amount: tipAmount,
@@ -134,7 +140,7 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
         // Clean and validate the tip amount
         const cleanAmount = item.amount?.replace(/[^\d.]/g, '');
         const tipAmount = cleanAmount ? parseFloat(cleanAmount) : 0;
-        
+
         if (!cleanAmount || isNaN(tipAmount) || tipAmount <= 0) {
           throw new Error("Please enter a valid tip amount greater than 0");
         }
