@@ -45,29 +45,51 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
           const result = await Tesseract.recognize(file, "eng");
           const text = result.data.text;
 
-          // Improved tip pattern matching
-          const tipRegex = /(TIP|Tip)\s+\$?(\d+\.\d{2})/gi;
+          // Enhanced tip pattern matching
+          const tipRegex = /(?:tip|gratuity|grat\.?|tip amount)[\s:]*\$?\s*(\d+\.\d{2})/gi;
           const tipMatches = Array.from(text.matchAll(tipRegex));
           
-          // Improved date pattern matching
-          const dateRegex = /\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s\d{2}\/\d{2}\/\d{4}\s\d{1,2}:\d{2}\s?(?:AM|PM|am|pm)\b/g;
+          // Enhanced date pattern matching to catch more formats
+          const dateRegex = /(?:\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s)?(?:\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}|\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})\s*(?:\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?)?/g;
           const dates = Array.from(text.matchAll(dateRegex))
-            .map(match => match[0].replace(/\s?([ap])m\b/i, (_, p1) => ` ${p1.toUpperCase()}M`));
+            .map(match => {
+              try {
+                const dateStr = match[0].trim();
+                const parsedDate = new Date(dateStr);
+                return !isNaN(parsedDate.getTime()) ? dateStr : null;
+              } catch (e) {
+                return null;
+              }
+            })
+            .filter(date => date !== null);
 
           const extractedResults: Receipt[] = [];
           
-          // Match tips with dates
+          // Process each tip amount
           tipMatches.forEach((tipMatch, index) => {
-            const tipAmount = tipMatch[2];
+            const tipAmount = tipMatch[1];
+            // Try to use corresponding date, fallback to closest date, then today
             const date = dates[index] || dates[0] || new Date().toISOString();
             
-            if (tipAmount) {
+            if (tipAmount && !isNaN(parseFloat(tipAmount))) {
               extractedResults.push({
                 amount: tipAmount,
                 date: date,
               });
             }
           });
+
+          // If we found dates but no tips, add entries for manual tip input
+          if (tipMatches.length === 0 && dates.length > 0) {
+            dates.forEach(date => {
+              if (date) {
+                extractedResults.push({
+                  amount: "",
+                  date: date,
+                });
+              }
+            });
+          }
 
           // If no results were found, try analyzing the whole text
           if (extractedResults.length === 0) {
