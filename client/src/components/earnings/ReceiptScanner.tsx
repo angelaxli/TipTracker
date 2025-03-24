@@ -68,21 +68,6 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
             }
           });
 
-            // For each tip amount found, create a receipt entry
-            tipMatches.forEach((tipMatch, index) => {
-              const tipAmount = tipMatch[1];
-              // Use corresponding date and time if available, otherwise use the first found
-              const date = dates[index] || dates[0] || "";
-              const time = times[index] || times[0] || "";
-
-              if (tipAmount) {
-                extractedResults.push({
-                  amount: tipAmount,
-                  date: date + (time ? " " + time : ""),
-                });
-              }
-            });
-
             // If no tips were found but we have dates, add placeholder entries
             if (tipMatches.length === 0 && dates.length > 0) {
               dates.forEach((date, index) => {
