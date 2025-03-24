@@ -81,17 +81,26 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
 
           // If we found any results, add them
           if (extractedResults.length > 0) {
-              .filter(date => date !== null);
-
             // Match tips with dates exactly like Python code
-            for (let i = 0; i < tipMatches.length; i++) {
-              // Extract tip amount from capture group like Python code
-              const tipAmount = tipMatches[i][2];  // Using group 2 which contains just the amount
-              
-              // Get corresponding date if available
-              const date = dates[i] || dates[0] || new Date().toISOString();
-
-              return extractedResults;
+            for (let i = 0; i < tipMatches.length && i < extractedResults.length; i++) {
+              if (tipMatches[i] && tipMatches[i].length > 2) {
+                // Extract tip amount from capture group like Python code
+                const tipAmount = tipMatches[i][2];  // Using group 2 which contains just the amount
+                
+                // Get corresponding date if available
+                const date = dates[i] || dates[0] || new Date().toISOString();
+                
+                // Update the extracted result if needed
+                if (tipAmount && !extractedResults[i].amount) {
+                  extractedResults[i].amount = tipAmount;
+                }
+                if (date && !extractedResults[i].date) {
+                  extractedResults[i].date = date;
+                }
+              }
+            }
+            
+            return extractedResults;
           }
 
           // If no results were found, try analyzing the whole text

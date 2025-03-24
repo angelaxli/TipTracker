@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link } from "wouter";
-import { PlusCircle, FileText, BarChart2, List, TrendingUp } from "lucide-react";
+import { PlusCircle, FileText, BarChart2, List, TrendingUp, LineChart, PieChart } from "lucide-react";
 
 export function QuickActions() {
   return (
@@ -56,6 +56,16 @@ export function QuickActions() {
               <div>
                 <h3 className="font-medium text-gray-800">Trend Analysis</h3>
                 <p className="text-sm text-gray-600">Discover patterns in your tips</p>
+              </div>
+            </div>
+          </Link>
+
+          <Link href="/advanced-analytics">
+            <div className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow duration-200 cursor-pointer flex items-center bg-gradient-to-r from-blue-50 to-indigo-50 border-indigo-200">
+              <PieChart className="text-indigo-600 h-6 w-6 mr-4" />
+              <div>
+                <h3 className="font-medium text-indigo-800">Advanced Analytics</h3>
+                <p className="text-sm text-indigo-700">Detailed insights & projections</p>
               </div>
             </div>
           </Link>

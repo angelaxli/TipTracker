@@ -8,6 +8,7 @@ import UploadTip from "@/pages/upload-tip";
 import EarningsLog from "@/pages/earnings-log";
 import EarningsGraphPage from "@/pages/earnings-graph";
 import TrendAnalysisPage from "@/pages/trend-analysis";
+import AdvancedAnalytics from "@/pages/advanced-analytics";
 import UploadSuccess from "@/pages/upload-success";
 import NotFound from "@/pages/not-found";
 
@@ -21,6 +22,7 @@ function Router() {
       <Route path="/earnings-log" component={EarningsLog} />
       <Route path="/earnings-graph" component={EarningsGraphPage} />
       <Route path="/trend-analysis" component={TrendAnalysisPage} />
+      <Route path="/advanced-analytics" component={AdvancedAnalytics} />
       <Route component={NotFound} />
     </Switch>
   );
