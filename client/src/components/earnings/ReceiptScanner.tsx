@@ -135,10 +135,11 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
     try {
       // Call the API to save the tip
       const tipData = {
-        amount: receipt[0]?.amount || 0,
-        date: receipt[0]?.date || new Date().toISOString(),
+        amount: Number(receipt[0]?.amount) || 0,
+        date: new Date(receipt[0]?.date || new Date()).toISOString(),
         source: "cash",
-        notes: receipt.find(r => r.notes)?.notes || ""
+        notes: notes[0] || "",
+        userId: 1 // Using demo user ID
       };
       
       const response = await fetch('/api/tips', {
