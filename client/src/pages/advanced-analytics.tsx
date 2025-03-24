@@ -4,11 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useQuery } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { TipsByTimeAnalysis } from "@/components/analytics/TipsByTimeAnalysis";
-import { TipsBySourceAnalysis } from "@/components/analytics/TipsBySourceAnalysis";
 import { IncomeProjection } from "@/components/analytics/IncomeProjection";
-import { HeatmapVisualization } from "@/components/analytics/HeatmapVisualization";
-import { TipTrendsOverTime } from "@/components/analytics/TipTrendsOverTime";
 import { ComparativeAnalysis } from "@/components/analytics/ComparativeAnalysis";
 import { format } from "date-fns";
 import { CalendarIcon, Download } from "lucide-react";
@@ -20,24 +16,27 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { queryClient } from "@/lib/queryClient";
 import { tipSources } from "@shared/schema";
 import type { TipSource } from "@shared/schema";
+import { AIInsights } from "@/components/earnings/AIInsights"; //Import AIInsights
+import type { Tip } from "@shared/schema";
+
 
 // Helper function to convert tips data to CSV
 const tipsToCSV = (tips: any[]) => {
   if (!tips || tips.length === 0) return '';
-  
+
   const headers = Object.keys(tips[0]).join(',');
-  const rows = tips.map(tip => 
-    Object.values(tip).map(value => 
+  const rows = tips.map(tip =>
+    Object.values(tip).map(value =>
       typeof value === 'string' && value.includes(',') ? `"${value}"` : value
     ).join(',')
   ).join('\n');
-  
+
   return `${headers}\n${rows}`;
 };
 
 export default function AdvancedAnalytics() {
   const { toast } = useToast();
-  const [selectedTab, setSelectedTab] = useState("by-time");
+  const [selectedTab, setSelectedTab] = useState("projection"); // Default to projection
   const [dateRange, setDateRange] = useState<{
     from: Date;
     to: Date;
@@ -47,30 +46,30 @@ export default function AdvancedAnalytics() {
   });
 
   // Fetch tip data
-  const { data: tips, isLoading } = useQuery({
+  const { data: tips, isLoading } = useQuery<Tip[]>({ //Type safety added
     queryKey: ['/api/tips'],
   });
 
-  // Filter tips by date range
-  const filteredTips = tips?.filter((tip: any) => {
+  // Filter tips by date range (this part remains largely unchanged)
+  const filteredTips = tips?.filter((tip: Tip) => { //Type safety added
     const tipDate = new Date(tip.date);
     return tipDate >= dateRange.from && tipDate <= dateRange.to;
-  });
+  }) || []; //Handle null case
 
-  // Calculate statistics
+  // Calculate statistics (this part remains largely unchanged)
   const stats = {
     totalTips: filteredTips?.length || 0,
-    totalAmount: filteredTips?.reduce((sum: number, tip: any) => sum + tip.amount, 0) || 0,
-    averageAmount: filteredTips?.length 
-      ? filteredTips.reduce((sum: number, tip: any) => sum + tip.amount, 0) / filteredTips.length 
+    totalAmount: filteredTips?.reduce((sum: number, tip: Tip) => sum + tip.amount, 0) || 0,
+    averageAmount: filteredTips?.length
+      ? filteredTips.reduce((sum: number, tip: Tip) => sum + tip.amount, 0) / filteredTips.length
       : 0,
     tipsBySource: tipSources.reduce((acc: Record<string, number>, source: TipSource) => {
-      acc[source] = filteredTips?.filter((tip: any) => tip.source === source).length || 0;
+      acc[source] = filteredTips?.filter((tip: Tip) => tip.source === source).length || 0;
       return acc;
     }, {} as Record<string, number>)
   };
 
-  // Handle download of tip data
+  // Handle download of tip data (this part remains largely unchanged)
   const handleDownloadCSV = () => {
     if (!filteredTips || filteredTips.length === 0) {
       toast({
@@ -90,14 +89,14 @@ export default function AdvancedAnalytics() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     toast({
       title: "Download started",
       description: "Your tip data is being downloaded as a CSV file.",
     });
   };
 
-  // Handle refresh data
+  // Handle refresh data (this part remains largely unchanged)
   const handleRefreshData = () => {
     queryClient.invalidateQueries({ queryKey: ['/api/tips'] });
     toast({
@@ -109,9 +108,9 @@ export default function AdvancedAnalytics() {
   return (
     <div className="min-h-screen bg-gray-50">
       <Header showBackButton title="Advanced Analytics" />
-      
+
       <main className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-        {/* Date Range Selector */}
+        {/* Date Range Selector (this part remains largely unchanged) */}
         <div className="flex flex-col sm:flex-row justify-between gap-4 items-start sm:items-center mb-6">
           <div className="flex gap-2 items-center">
             <Popover>
@@ -146,10 +145,10 @@ export default function AdvancedAnalytics() {
                     from: dateRange?.from || new Date(),
                     to: dateRange?.to || new Date(),
                   }}
-                  onSelect={(range) => 
-                    setDateRange({ 
-                      from: range?.from || new Date(), 
-                      to: range?.to || new Date() 
+                  onSelect={(range) =>
+                    setDateRange({
+                      from: range?.from || new Date(),
+                      to: range?.to || new Date()
                     })
                   }
                   numberOfMonths={2}
@@ -157,7 +156,7 @@ export default function AdvancedAnalytics() {
               </PopoverContent>
             </Popover>
           </div>
-          
+
           <div className="flex gap-2">
             <Button variant="outline" onClick={handleRefreshData}>
               Refresh Data
@@ -169,7 +168,7 @@ export default function AdvancedAnalytics() {
           </div>
         </div>
 
-        {/* Stats Overview */}
+        {/* Stats Overview (this part remains largely unchanged) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           <Card>
             <CardHeader className="pb-2">
@@ -183,7 +182,7 @@ export default function AdvancedAnalytics() {
               )}
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-gray-500">Total Earnings</CardTitle>
@@ -196,7 +195,7 @@ export default function AdvancedAnalytics() {
               )}
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-gray-500">Average Tip</CardTitle>
@@ -209,7 +208,7 @@ export default function AdvancedAnalytics() {
               )}
             </CardContent>
           </Card>
-          
+
           <Card>
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-medium text-gray-500">Most Common Source</CardTitle>
@@ -226,42 +225,27 @@ export default function AdvancedAnalytics() {
           </Card>
         </div>
 
-        {/* Analytics Tabs */}
-        <Tabs 
-          defaultValue="by-time" 
-          value={selectedTab} 
-          onValueChange={setSelectedTab} 
+        {/* Analytics Tabs - Modified to include AIInsights */}
+        <Tabs
+          defaultValue="ai-insights"
+          value={selectedTab}
+          onValueChange={setSelectedTab}
           className="space-y-4"
         >
-          <TabsList className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 w-full">
-            <TabsTrigger value="by-time">Time Analysis</TabsTrigger>
-            <TabsTrigger value="by-source">Source Analysis</TabsTrigger>
-            <TabsTrigger value="heatmap">Heatmap View</TabsTrigger>
-            <TabsTrigger value="trends">Trends</TabsTrigger>
-            <TabsTrigger value="comparative">Comparative</TabsTrigger>
-            <TabsTrigger value="projection">Projections</TabsTrigger>
+          <TabsList className="grid grid-cols-3 w-full">
+            <TabsTrigger value="ai-insights">AI Insights</TabsTrigger>
+            <TabsTrigger value="comparative">Comparative Analysis</TabsTrigger>
+            <TabsTrigger value="projection">Income Projection</TabsTrigger>
           </TabsList>
-          
-          <TabsContent value="by-time" className="space-y-4">
-            <TipsByTimeAnalysis tips={filteredTips} isLoading={isLoading} />
+
+          <TabsContent value="ai-insights" className="space-y-4">
+            <AIInsights tips={filteredTips} isLoading={isLoading} />
           </TabsContent>
-          
-          <TabsContent value="by-source" className="space-y-4">
-            <TipsBySourceAnalysis tips={filteredTips} isLoading={isLoading} />
-          </TabsContent>
-          
-          <TabsContent value="heatmap" className="space-y-4">
-            <HeatmapVisualization tips={filteredTips} isLoading={isLoading} />
-          </TabsContent>
-          
-          <TabsContent value="trends" className="space-y-4">
-            <TipTrendsOverTime tips={filteredTips} isLoading={isLoading} dateRange={dateRange} />
-          </TabsContent>
-          
+
           <TabsContent value="comparative" className="space-y-4">
             <ComparativeAnalysis tips={filteredTips} isLoading={isLoading} />
           </TabsContent>
-          
+
           <TabsContent value="projection" className="space-y-4">
             <IncomeProjection tips={filteredTips} isLoading={isLoading} />
           </TabsContent>
