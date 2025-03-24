@@ -136,9 +136,12 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
   const handleUseData = async (receipt: Receipt[]) => {
     try {
       for (const item of receipt) {
-        const tipAmount = Number(item.amount);
+        // Clean and validate the tip amount
+        const cleanAmount = item.amount.replace(/[^0-9.]/g, '');
+        const tipAmount = parseFloat(cleanAmount);
+        
         if (isNaN(tipAmount) || tipAmount <= 0) {
-          throw new Error("Invalid tip amount");
+          throw new Error(`Invalid tip amount: ${item.amount}`);
         }
 
         const tipData = {
