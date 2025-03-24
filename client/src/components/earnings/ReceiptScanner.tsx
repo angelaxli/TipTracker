@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { format } from "date-fns";
 import { Upload } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -67,9 +68,11 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
 
             // Only add if we found a tip
             if (tipMatch) {
+              const date = dateMatch ? new Date(dateMatch[0]) : new Date();
+              const formattedDate = format(date, "yyyy-MM-dd'T'HH:mm");
               extractedResults.push({
                 amount: tipMatch[2],
-                date: dateMatch ? new Date(dateMatch[0]).toISOString() : new Date().toISOString(),
+                date: formattedDate,
                 source: "cash",
                 notes: `Receipt ${index + 1}`
               });
