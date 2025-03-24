@@ -50,58 +50,62 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
             .filter(section => section.length > 0);
 
           // Process text to find all tips and dates across sections
-          const tipPattern = /(TIP|Tip)\s+\$?(\d+\.\d{2})/g;
-          const datePattern = /\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s\d{2}\/\d{2}\/\d{4}\s\d{1,2}:\d{2}\s?(?:AM|PM|am|pm)\b/g;
-          
-          const allTipMatches = Array.from(text.matchAll(tipPattern));
-          const allDateMatches = Array.from(text.matchAll(datePattern));
+          const extractedResults: Receipt[] = [];
 
-          // Extract all tip values
-          const tipValues = allTipMatches.map(match => ({
-            amount: match[2],  // Group 2 contains just the amount
-            matched: true
-          }));
+          // Enhanced patterns to catch more formats
+          const tipPatterns = [
+            /(TIP|Tip|GRATUITY)\s*[:=]?\s*\$?(\d+\.\d{2})/g,
+            /(?:^|\s)\$?(\d+\.\d{2})\s*(?:TIP|Tip|GRATUITY)/g
+          ];
 
-          // Extract and normalize all dates
-          const normalizedDates = allDateMatches
-            .map(match => match[0].replace(/\s?([ap])m\b/i, (_, p1) => ` ${p1.toUpperCase()}M`))
-            .filter(date => {
-              try {
-                return !isNaN(new Date(date).getTime());
-              } catch {
-                return false;
+          const datePatterns = [
+            /\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s\d{2}\/\d{2}\/\d{4}\s\d{1,2}:\d{2}\s?(?:AM|PM|am|pm)\b/g,
+            /\b\d{2}\/\d{2}\/\d{4}\s\d{1,2}:\d{2}\s?(?:AM|PM|am|pm)\b/g,
+            /\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/g
+          ];
+
+          // Process each section for better accuracy
+          sections.forEach(section => {
+            let tipAmount: string | null = null;
+            let receiptDate: string | null = null;
+
+            // Find tip amount using multiple patterns
+            for (const pattern of tipPatterns) {
+              const match = section.match(pattern);
+              if (match) {
+                // Extract the amount, handling both pattern types
+                tipAmount = match[2] || match[1];
+                break;
               }
-            });
+            }
 
-          // Create receipt entries for each tip/date pair
-          const extractedResults = tipValues.map((tip, index) => ({
-            amount: tip.amount,
-            date: normalizedDates[index] || new Date().toISOString()
-          }));
-
-          // If we found any results, add them
-          if (extractedResults.length > 0) {
-            // Match tips with dates exactly like Python code
-            for (let i = 0; i < tipMatches.length && i < extractedResults.length; i++) {
-              if (tipMatches[i] && tipMatches[i].length > 2) {
-                // Extract tip amount from capture group like Python code
-                const tipAmount = tipMatches[i][2];  // Using group 2 which contains just the amount
-                
-                // Get corresponding date if available
-                const date = dates[i] || dates[0] || new Date().toISOString();
-                
-                // Update the extracted result if needed
-                if (tipAmount && !extractedResults[i].amount) {
-                  extractedResults[i].amount = tipAmount;
-                }
-                if (date && !extractedResults[i].date) {
-                  extractedResults[i].date = date;
+            // Find date using multiple patterns
+            for (const pattern of datePatterns) {
+              const match = section.match(pattern);
+              if (match) {
+                const dateStr = match[0].replace(/\s?([ap])m\b/i, (_, p1) => ` ${p1.toUpperCase()}M`);
+                try {
+                  const date = new Date(dateStr);
+                  if (!isNaN(date.getTime())) {
+                    receiptDate = date.toISOString();
+                    break;
+                  }
+                } catch {
+                  continue;
                 }
               }
             }
-            
-            return extractedResults;
-          }
+
+            // If we found both tip and date, add to results
+            if (tipAmount && !isNaN(parseFloat(tipAmount))) {
+              extractedResults.push({
+                amount: tipAmount,
+                date: receiptDate || new Date().toISOString(),
+                source: "cash", // Default source
+                notes: "Scanned from receipt"
+              });
+            }
+          });
 
           // If no results were found, try analyzing the whole text
           if (extractedResults.length === 0) {
