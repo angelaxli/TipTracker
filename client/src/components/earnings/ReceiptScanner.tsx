@@ -51,26 +51,38 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
 
           const extractedResults: Receipt[] = [];
 
-          // Process each section as a potential receipt
-          for (const section of sections) {
-            // Use Python's exact pattern for tips
-            const tipPattern = /(TIP|Tip)\s+\$?(\d+\.\d{2})/g;
-            const tipMatches = Array.from(section.matchAll(tipPattern));
-            
-            // Use Python's exact pattern for dates
-            const datePattern = /\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s\d{2}\/\d{2}\/\d{4}\s\d{1,2}:\d{2}\s?(?:AM|PM|am|pm)\b/g;
-            const dates = Array.from(section.matchAll(datePattern))
-              .map(match => {
-                // Normalize AM/PM exactly like Python code
-                const normalizedDate = match[0].replace(/\s?([ap])m\b/i, (_, p1) => ` ${p1.toUpperCase()}M`);
-                try {
-                  const dateStr = normalizedDate.trim();
-                  const parsedDate = new Date(dateStr);
-                  return !isNaN(parsedDate.getTime()) ? dateStr : null;
-                } catch {
-                  return null;
-                }
-              })
+          // Process text to find all tips and dates across sections
+          const tipPattern = /(TIP|Tip)\s+\$?(\d+\.\d{2})/g;
+          const datePattern = /\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s\d{2}\/\d{2}\/\d{4}\s\d{1,2}:\d{2}\s?(?:AM|PM|am|pm)\b/g;
+          
+          const allTipMatches = Array.from(text.matchAll(tipPattern));
+          const allDateMatches = Array.from(text.matchAll(datePattern));
+
+          // Extract all tip values
+          const tipValues = allTipMatches.map(match => ({
+            amount: match[2],  // Group 2 contains just the amount
+            matched: true
+          }));
+
+          // Extract and normalize all dates
+          const normalizedDates = allDateMatches
+            .map(match => match[0].replace(/\s?([ap])m\b/i, (_, p1) => ` ${p1.toUpperCase()}M`))
+            .filter(date => {
+              try {
+                return !isNaN(new Date(date).getTime());
+              } catch {
+                return false;
+              }
+            });
+
+          // Create receipt entries for each tip/date pair
+          const extractedResults = tipValues.map((tip, index) => ({
+            amount: tip.amount,
+            date: normalizedDates[index] || new Date().toISOString()
+          }));
+
+          // If we found any results, add them
+          if (extractedResults.length > 0) {
               .filter(date => date !== null);
 
             // Match tips with dates exactly like Python code
@@ -81,13 +93,7 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
               // Get corresponding date if available
               const date = dates[i] || dates[0] || new Date().toISOString();
 
-              if (tipAmount && !isNaN(parseFloat(tipAmount))) {
-                extractedResults.push({
-                  amount: tipAmount,
-                  date: date,
-                });
-              }
-            }
+              return extractedResults;
           }
 
           // If no results were found, try analyzing the whole text
