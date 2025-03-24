@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/hooks/use-toast";
 import { Link, useLocation } from "wouter";
-import { ChevronLeft, LogOut, Home, BarChart2, List, PlusCircle } from "lucide-react";
+import { ChevronLeft, LogOut, Home, BarChart2, List, PlusCircle, PieChart } from "lucide-react";
 
 interface HeaderProps {
   showBackButton?: boolean;
