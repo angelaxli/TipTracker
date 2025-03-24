@@ -76,6 +76,18 @@ export function Header({ showBackButton = false, title = "TipTracker" }: HeaderP
                 Log
               </Button>
             </Link>
+            <Link href="/trend-analysis">
+              <Button variant={isActive("/trend-analysis") ? "default" : "ghost"} size="sm" className="flex items-center">
+                <BarChart2 size={16} className="mr-1" />
+                Trends
+              </Button>
+            </Link>
+            <Link href="/advanced-analytics">
+              <Button variant={isActive("/advanced-analytics") ? "default" : "ghost"} size="sm" className="flex items-center">
+                <PieChart size={16} className="mr-1" />
+                Analytics
+              </Button>
+            </Link>
           </nav>
         </div>
         
