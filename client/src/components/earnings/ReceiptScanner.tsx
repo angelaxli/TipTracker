@@ -133,32 +133,39 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
 
   const handleUseData = async (receipt: Receipt[]) => {
     try {
-      // Call the API to save the tip
-      const tipData = {
-        amount: Number(receipt[0]?.amount) || 0,
-        date: new Date(receipt[0]?.date || new Date()).toISOString(),
-        source: "cash",
-        notes: notes[0] || "",
-        userId: 1 // Using demo user ID
-      };
-      
-      const response = await fetch('/api/tips', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(tipData),
-      });
+      for (let i = 0; i < receipt.length; i++) {
+        const tipData = {
+          amount: Number(receipt[i]?.amount) || 0,
+          date: new Date(receipt[i]?.date || new Date()).toISOString(),
+          source: "cash",
+          notes: notes[i] || "",
+          userId: 1
+        };
+        
+        const response = await fetch('/api/tips', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(tipData),
+        });
 
-      if (!response.ok) {
-        throw new Error('Failed to save tip');
+        if (!response.ok) {
+          throw new Error('Failed to save tip');
+        }
       }
 
+      // Invalidate and refetch tips data
+      await queryClient.invalidateQueries({ queryKey: ['/api/tips'] });
+      
       onExtractedData(receipt);
       toast({
         title: "Tip Saved",
         description: "Receipt data has been saved successfully.",
       });
+      
+      // Navigate to earnings log
+      navigate('/earnings-log');
     } catch (error) {
       console.error("Error saving tip:", error);
       toast({
