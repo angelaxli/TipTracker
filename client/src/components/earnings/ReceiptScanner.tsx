@@ -155,12 +155,10 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
 
         if (!response.ok) {
           const errorData = await response.json();
-          const errorMessage = errorData.message || 'Failed to save tip';
-          throw new Error(errorMessage);
+          throw new Error(errorData.message || 'Failed to save tip');
         }
       }
 
-      // Invalidate and refetch tips data
       await queryClient.invalidateQueries({ queryKey: ['/api/tips'] });
 
       onExtractedData(receipt);
@@ -169,8 +167,7 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
         description: "Receipt data has been saved successfully.",
       });
 
-      // Navigate to earnings log
-      location('/earnings-log');
+      window.location.href = '/earnings-log';
     } catch (error) {
       console.error("Error saving tip:", error);
       toast({
