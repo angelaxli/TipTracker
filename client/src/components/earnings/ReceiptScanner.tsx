@@ -272,7 +272,7 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
                           }}
                           disabled={!receipt.some((r: Receipt) => r.amount || r.date)}
                         >
-                          Use Data
+                          Save Tip
                         </Button>
                       </div>
                     </>
