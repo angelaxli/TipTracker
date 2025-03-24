@@ -375,7 +375,7 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
                                 }
 
                                 // Format date to match TipForm exactly
-                                const formattedDate = format(tipDate, "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+                                const formattedDate = format(tipDate, "yyyy-MM-dd'T'HH:mm");
 
                                 const tipToSave = {
                                   ...item,
