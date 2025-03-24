@@ -62,7 +62,7 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
           // Process each section as a separate receipt
           sections.forEach((section, index) => {
             // For each section, find the first tip and date match only
-            const tipMatch = section.match(/(TIP|Tip|GRATUITY|Grat)\s*[:=]?\s*\$?(\d+\.\d{2})/i);
+            const tipMatch = section.match(/(TIP|Tip|Tp|GRATUITY|Grat)\s*[:=]?\s*\$?(\d+\.\d{2})/i);
             const dateMatch = section.match(/\b\d{1,2}\/\d{1,2}\/(?:\d{2}|\d{4})\b/);
 
             // Only add if we found a tip
