@@ -15,6 +15,8 @@ interface ReceiptScannerProps {
 export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
   const [isScanning, setIsScanning] = useState(false);
   const [scannedReceipts, setScannedReceipts] = useState<Receipt[][]>([]);
+  const [notes, setNotes] = useState<string[]>([]);
+  const [savedReceipts, setSavedReceipts] = useState<number[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -172,25 +174,70 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
 
             <div className="space-y-3">
               {scannedReceipts.map((receipt: Receipt[], index: number) => (
-                <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                  <div className="space-y-1">
-                    {receipt.map((item: Receipt, i: number) => (
-                      <div key={i} className="text-sm text-gray-600">
-                        Amount: <span className="font-medium text-gray-800">${item.amount || 'N/A'}</span>{' '}
-                        Date: <span className="font-medium text-gray-800">{item.date || 'N/A'}</span>
+                <div key={index} className="space-y-2 p-2 bg-gray-50 rounded">
+                  {savedReceipts.includes(index) ? (
+                    <div className="text-center py-4">
+                      <p className="text-green-600 font-medium mb-2">Tip Saved!</p>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setScannedReceipts(scannedReceipts.filter((_, i) => i !== index));
+                          setNotes(notes.filter((_, i) => i !== index));
+                          setSavedReceipts(savedReceipts.filter(i => i !== index));
+                        }}
+                      >
+                        Clear
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="space-y-1">
+                        {receipt.map((item: Receipt, i: number) => (
+                          <div key={i} className="text-sm text-gray-600">
+                            Amount: <span className="font-medium text-gray-800">${item.amount || 'N/A'}</span>{' '}
+                            Date: <span className="font-medium text-gray-800">{item.date || 'N/A'}</span>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleUseData(receipt)}
-                    disabled={!receipt.some((r: Receipt) => r.amount || r.date)}
-                  >
-                    Use Data
-                  </Button>
+                      <textarea
+                        className="w-full p-2 text-sm border rounded"
+                        placeholder="Add notes about this tip..."
+                        value={notes[index] || ''}
+                        onChange={(e) => {
+                          const newNotes = [...notes];
+                          newNotes[index] = e.target.value;
+                          setNotes(newNotes);
+                        }}
+                      />
+                      <div className="flex justify-end">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            handleUseData([...receipt, { notes: notes[index] || '' }]);
+                            setSavedReceipts([...savedReceipts, index]);
+                          }}
+                          disabled={!receipt.some((r: Receipt) => r.amount || r.date)}
+                        >
+                          Use Data
+                        </Button>
+                      </div>
+                    </>
+                  )}
                 </div>
               ))}
+              {scannedReceipts.length > 0 && (
+                <Button
+                  className="w-full mt-4"
+                  variant="outline"
+                  onClick={() => {
+                    fileInputRef.current?.click();
+                  }}
+                >
+                  Scan More
+                </Button>
+              )}
             </div>
           </div>
         )}
