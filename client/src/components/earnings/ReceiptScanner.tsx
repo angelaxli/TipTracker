@@ -202,7 +202,7 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
 
         const tipData = {
           amount: parseFloat(amount.toFixed(2)),
-          date: format(tipDate, "yyyy-MM-dd'T'HH:mm"),
+          date: tipDate.toISOString(),
           source: item.source || "cash",
           notes: item.notes || "Scanned from receipt",
           userId: 1
@@ -374,13 +374,15 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
                                   throw new Error("Invalid amount format");
                                 }
 
-                                // Format date to match TipForm exactly
-                                const formattedDate = format(tipDate, "yyyy-MM-dd'T'HH:mm");
+                                // Format date to match database requirements
+                                const formattedDate = tipDate.toISOString();
 
                                 const tipToSave = {
                                   ...item,
                                   date: formattedDate,
-                                  amount: amount
+                                  amount: amount,
+                                  source: item.source || "cash",
+                                  notes: item.notes || "Scanned from receipt"
                                 };
                                 await handleUseData([tipToSave]);
                                 setSavedReceipts([...savedReceipts, `${index}-${i}`]);
