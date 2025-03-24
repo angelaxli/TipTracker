@@ -3,7 +3,7 @@ import { Upload } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { useNavigate } from "wouter";
+import { useLocation } from "wouter";
 import { queryClient } from "@/lib/queryClient";
 import Tesseract from "tesseract.js";
 
@@ -21,6 +21,7 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
   const [savedReceipts, setSavedReceipts] = useState<number[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
+  const location = useLocation();
 
   const handleUploadClick = () => {
     if (fileInputRef.current) {
@@ -54,7 +55,7 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
             // Find all tip amounts in the section
             const tipRegex = /(?:tip|gratuity|tip amount|grat)(?:\s*[:\.]\s*|\s+)\$?(\d+\.\d{2})/gi;
             const tipMatches = Array.from(section.matchAll(tipRegex));
-            
+
             // Find all dates in the section
             const dateRegex = /(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})|([A-Z][a-z]{2}\s\d{1,2},?\s\d{4})/g;
             const dates = Array.from(section.matchAll(dateRegex)).map(match => match[0]);
@@ -69,7 +70,7 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
               // Use corresponding date and time if available, otherwise use the first found
               const date = dates[index] || dates[0] || "";
               const time = times[index] || times[0] || "";
-              
+
               if (tipAmount) {
                 extractedResults.push({
                   amount: tipAmount,
@@ -95,7 +96,7 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
             // Redefining these here to make them available in this scope
             const tipRegex = /(?:tip|gratuity|tip amount|grat)(?:\s*[:\.]\s*|\s+)\$?(\d+\.\d{2})/i;
             const dateRegex = /(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})|([A-Z][a-z]{2}\s\d{1,2},?\s\d{4})/g;
-            
+
             const tipMatch = text.match(tipRegex);
             const tipAmount = tipMatch ? tipMatch[1] : "";
             const dates = Array.from(text.matchAll(dateRegex)).map(match => match[0]);
@@ -135,8 +136,6 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
 
   const handleUseData = async (receipt: Receipt[]) => {
     try {
-      const navigate = useNavigate();
-      
       for (const item of receipt) {
         const tipData = {
           amount: Number(item.amount) || 0,
@@ -145,7 +144,7 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
           notes: item.notes || "",
           userId: 1
         };
-        
+
         const response = await fetch('/api/tips', {
           method: 'POST',
           headers: {
@@ -155,26 +154,28 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
         });
 
         if (!response.ok) {
-          throw new Error('Failed to save tip');
+          const errorData = await response.json();
+          const errorMessage = errorData.message || 'Failed to save tip';
+          throw new Error(errorMessage);
         }
       }
 
       // Invalidate and refetch tips data
       await queryClient.invalidateQueries({ queryKey: ['/api/tips'] });
-      
+
       onExtractedData(receipt);
       toast({
         title: "Tip Saved",
         description: "Receipt data has been saved successfully.",
       });
-      
+
       // Navigate to earnings log
-      navigate('/earnings-log');
+      location('/earnings-log');
     } catch (error) {
       console.error("Error saving tip:", error);
       toast({
         title: "Error",
-        description: "Failed to save tip data. Please try again.",
+        description: `Failed to save tip data: ${error.message}. Please try again.`,
         variant: "destructive"
       });
     }
@@ -278,7 +279,7 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
                   )}
                 </div>
               ))}
-              </div>
+            </div>
           </div>
         )}
       </CardContent>
