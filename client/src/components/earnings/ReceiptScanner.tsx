@@ -381,7 +381,7 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
                                   date: tipDate.toISOString(),
                                   amount: amount,
                                   source: item.source || "cash",
-                                  notes: item.notes || "Scanned from receipt",
+                                  notes: item.notes || "",
                                   userId: 1
                                 };
                                 await handleUseData([tipToSave]);
