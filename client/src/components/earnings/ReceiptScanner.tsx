@@ -62,11 +62,9 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
             const dates = Array.from(section.matchAll(datePattern))
               .map(match => {
                 // Normalize AM/PM exactly like Python code
-                return match[0].replace(/\s?([ap])m\b/i, (_, p1) => ` ${p1.toUpperCase()}M`);
-              });
-              .map(match => {
+                const normalizedDate = match[0].replace(/\s?([ap])m\b/i, (_, p1) => ` ${p1.toUpperCase()}M`);
                 try {
-                  const dateStr = match[0].trim();
+                  const dateStr = normalizedDate.trim();
                   const parsedDate = new Date(dateStr);
                   return !isNaN(parsedDate.getTime()) ? dateStr : null;
                 } catch {
