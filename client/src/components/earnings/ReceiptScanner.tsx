@@ -1,8 +1,9 @@
+
 import { useState, useRef } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Upload } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { Upload, Check } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 import Tesseract from "tesseract.js";
 
 interface ReceiptScannerProps {
@@ -11,7 +12,7 @@ interface ReceiptScannerProps {
 
 export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
   const [isScanning, setIsScanning] = useState(false);
-  const [extractedData, setExtractedData] = useState<{ amount: string; date: string } | null>(null);
+  const [scannedReceipts, setScannedReceipts] = useState<Array<{ amount: string; date: string }>>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -22,51 +23,48 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files?.length) return;
 
     setIsScanning(true);
     toast({
       title: "Processing",
-      description: "Analyzing your receipt...",
+      description: `Analyzing ${files.length} receipt(s)...`,
     });
 
     try {
-      const result = await Tesseract.recognize(file, "eng");
-      const text = result.data.text;
-      
-      // Extract tip amount - looking for patterns like "Tip: $XX.XX" or "Gratuity: XX.XX"
-      const tipRegex = /(?:tip|gratuity|tip amount|grat)(?:\s*[:\.]\s*|\s+)\$?(\d+\.\d{2})/i;
-      const tipMatch = text.match(tipRegex);
-      const tipAmount = tipMatch ? tipMatch[1] : "";
+      const results = await Promise.all(
+        Array.from(files).map(async (file) => {
+          const result = await Tesseract.recognize(file, "eng");
+          const text = result.data.text;
+          
+          // Extract tip amount
+          const tipRegex = /(?:tip|gratuity|tip amount|grat)(?:\s*[:\.]\s*|\s+)\$?(\d+\.\d{2})/i;
+          const tipMatch = text.match(tipRegex);
+          const tipAmount = tipMatch ? tipMatch[1] : "";
 
-      // Extract date - looking for common date formats
-      const dateRegex = /(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})|([A-Z][a-z]{2}\s\d{1,2},?\s\d{4})/g;
-      const dates = [];
-      let match;
-      
-      while ((match = dateRegex.exec(text)) !== null) {
-        dates.push(match[0]);
-      }
-        
-      // Use the first found date
-      const firstDate = dates.length > 0 ? dates[0] : "";
-      
-      const extractedResult = {
-        amount: tipAmount,
-        date: firstDate,
-      };
-      
-      setExtractedData(extractedResult);
+          // Extract date
+          const dateRegex = /(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})|([A-Z][a-z]{2}\s\d{1,2},?\s\d{4})/g;
+          const dates = text.match(dateRegex) || [];
+          const firstDate = dates.length > 0 ? dates[0] : "";
+
+          return {
+            amount: tipAmount,
+            date: firstDate,
+          };
+        })
+      );
+
+      setScannedReceipts(results.filter(r => r.amount || r.date));
       
       toast({
         title: "Scan Complete",
-        description: "Receipt analyzed successfully.",
+        description: `Successfully analyzed ${results.length} receipt(s).`,
       });
     } catch (error) {
       toast({
         title: "Scan Failed",
-        description: "Could not process the receipt. Try again with a clearer image.",
+        description: "Could not process one or more receipts. Try again with clearer images.",
         variant: "destructive",
       });
     } finally {
@@ -74,24 +72,22 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
     }
   };
 
-  const handleUseData = () => {
-    if (extractedData) {
-      onExtractedData(extractedData);
-      toast({
-        title: "Data Applied",
-        description: "Receipt data has been applied to the form.",
-      });
-    }
+  const handleUseData = (receipt: { amount: string; date: string }) => {
+    onExtractedData(receipt);
+    toast({
+      title: "Data Applied",
+      description: "Receipt data has been applied to the form.",
+    });
   };
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg font-medium text-gray-800">Scan Receipt</CardTitle>
+        <CardTitle className="text-lg font-medium text-gray-800">Scan Receipts</CardTitle>
       </CardHeader>
       <CardContent>
         <p className="text-sm text-gray-600 mb-4">
-          Upload a receipt image to automatically extract tip information.
+          Upload one or more receipt images to automatically extract tip information.
         </p>
         
         <div 
@@ -100,46 +96,44 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
         >
           <Upload className="mx-auto h-8 w-8 text-gray-400 mb-2" />
           <p className="text-sm text-gray-600 mb-1">Click to upload or drag and drop</p>
-          <p className="text-xs text-gray-500">JPG, PNG, or PDF up to 10MB</p>
+          <p className="text-xs text-gray-500">Multiple files supported - JPG, PNG, or PDF up to 10MB each</p>
           
           <input
             type="file"
             ref={fileInputRef}
             className="hidden"
             accept="image/*,.pdf"
+            multiple
             onChange={handleFileChange}
             disabled={isScanning}
           />
         </div>
         
-        {extractedData && (
+        {scannedReceipts.length > 0 && (
           <div className="border border-gray-200 rounded-lg p-4">
             <h3 className="font-medium text-gray-800 mb-2">Extracted Information</h3>
             
             <div className="space-y-3">
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Amount:</span>
-                <span className="text-sm font-medium text-gray-800">
-                  {extractedData.amount ? `$${extractedData.amount}` : "Not found"}
-                </span>
-              </div>
-              
-              <div className="flex justify-between">
-                <span className="text-sm text-gray-600">Date:</span>
-                <span className="text-sm font-medium text-gray-800">
-                  {extractedData.date || "Not found"}
-                </span>
-              </div>
-              
-              <div className="pt-3 flex justify-end">
-                <Button 
-                  onClick={handleUseData}
-                  className="bg-primary hover:bg-primary/90"
-                >
-                  <Check className="mr-2 h-4 w-4" />
-                  Use These Values
-                </Button>
-              </div>
+              {scannedReceipts.map((receipt, index) => (
+                <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                  <div className="space-y-1">
+                    <div className="text-sm text-gray-600">
+                      Amount: <span className="font-medium text-gray-800">${receipt.amount || 'N/A'}</span>
+                    </div>
+                    <div className="text-sm text-gray-600">
+                      Date: <span className="font-medium text-gray-800">{receipt.date || 'N/A'}</span>
+                    </div>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => handleUseData(receipt)}
+                    disabled={!receipt.amount && !receipt.date}
+                  >
+                    Use Data
+                  </Button>
+                </div>
+              ))}
             </div>
           </div>
         )}
