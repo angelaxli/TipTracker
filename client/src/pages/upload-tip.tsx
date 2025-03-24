@@ -82,14 +82,10 @@ export default function UploadTip() {
       <Header showBackButton title={editId ? "Edit Tip" : "Add Tip"} />
 
       <main className="max-w-3xl mx-auto px-4 py-6 space-y-6">
-        {showScanner ? (
-          <div className="space-y-6">
-            <ReceiptScanner onExtractedData={handleExtractedData} />
-            <TipForm initialData={initialData} />
-          </div>
-        ) : (
+        <div className="space-y-6">
+          <ReceiptScanner onExtractedData={handleExtractedData} />
           <TipForm initialData={initialData} />
-        )}
+        </div>
       </main>
     </div>
   );
