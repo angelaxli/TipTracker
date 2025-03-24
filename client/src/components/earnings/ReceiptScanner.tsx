@@ -45,7 +45,7 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
           const result = await Tesseract.recognize(file, "eng");
           const text = result.data.text;
 
-          // Split text into potential receipt sections by looking for common receipt markers
+          // Split text into potential receipt sections
           const sections = text.split(/(?:\n{3,}|={3,}|\*{3,}|-{3,})/g)
             .map(section => section.trim())
             .filter(section => section.length > 0);
@@ -53,30 +53,26 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
           const extractedResults: Receipt[] = [];
 
           // Process each section as a potential receipt
-          sections.forEach(section => {
-            // Enhanced tip pattern matching
+          for (const section of sections) {
             const tipRegex = /(?:tip|gratuity|grat\.?|tip amount)[\s:]*\$?\s*(\d+\.\d{2})/gi;
             const tipMatches = Array.from(section.matchAll(tipRegex));
             
-            // Enhanced date pattern matching
             const dateRegex = /(?:\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s)?(?:\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}|\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})\s*(?:\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?)?/g;
             const dates = Array.from(section.matchAll(dateRegex))
-              .map(match => {
+              .map(match => match[0].trim())
+              .filter(dateStr => {
                 try {
-                  const dateStr = match[0].trim();
                   const parsedDate = new Date(dateStr);
-                  return !isNaN(parsedDate.getTime()) ? dateStr : null;
-                } catch (e) {
-                  return null;
+                  return !isNaN(parsedDate.getTime());
+                } catch {
+                  return false;
                 }
-              })
-              .filter(date => date !== null);
+              });
 
-            // Process tips found in this section
-            tipMatches.forEach((tipMatch, index) => {
-              const tipAmount = tipMatch[1];
-              // Try to use corresponding date, fallback to closest date, then today
-              const date = dates[index] || dates[0] || new Date().toISOString();
+            // Match tips with dates
+            for (let i = 0; i < tipMatches.length; i++) {
+              const tipAmount = tipMatches[i][1];
+              const date = dates[i] || dates[0] || new Date().toISOString();
               
               if (tipAmount && !isNaN(parseFloat(tipAmount))) {
                 extractedResults.push({
@@ -84,8 +80,8 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
                   date: date,
                 });
               }
-            });
-          });
+            }
+          }
 
           // If no results were found, try analyzing the whole text
           if (extractedResults.length === 0) {
