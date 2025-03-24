@@ -61,59 +61,29 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
           const extractedResults: Receipt[] = [];
 
           // Process each section as a separate receipt
-          for (const section of sections) {
+          sections.forEach((section, index) => {
+            // For each section, find the first tip and date match only
             const tipMatch = section.match(/(TIP|Tip|Tp|GRATUITY|Grat)\s*[:=]?\s*\$?(\d+\.\d{2})/i);
             const dateMatch = section.match(/\b\d{1,2}\/\d{1,2}\/(?:\d{2}|\d{4})\b/);
 
+            // Only add if we found a tip and it's greater than 0
             if (tipMatch) {
               const tipAmount = parseFloat(tipMatch[2]);
               if (tipAmount > 0) {
                 const date = dateMatch ? new Date(dateMatch[0]) : new Date();
+                // Set time to current time when date is from receipt
                 date.setHours(new Date().getHours());
                 date.setMinutes(new Date().getMinutes());
                 const formattedDate = format(date, "yyyy-MM-dd'T'HH:mm");
-                
-                try {
-                  const response = await fetch('/api/tips', {
-                    method: 'POST',
-                    headers: {
-                      'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                      amount: tipAmount,
-                      date: date.toISOString(),
-                      source: "cash",
-                      notes: "Scanned from receipt",
-                      userId: 1
-                    })
-                  });
-
-                  if (!response.ok) {
-                    throw new Error('Failed to save tip');
-                  }
-
-                  await queryClient.invalidateQueries({ queryKey: ["/api/tips"] });
-                } catch (error) {
-                  console.error("Error saving tip:", error);
-                  toast({
-                    title: "Error",
-                    description: "Failed to save tip. Please try again.",
-                    variant: "destructive",
-                  });
-                  return;
-                }
+                extractedResults.push({
+                  amount: tipAmount.toFixed(2),
+                  date: formattedDate,
+                  source: "cash",
+                  notes: `Receipt ${index + 1}`
+                });
               }
             }
-          }
-          
-          toast({
-            title: "Success",
-            description: "Tips have been saved to your earnings log!",
           });
-          
-          if (fileInputRef.current) {
-            fileInputRef.current.value = '';
-          }
 
           // Enhanced patterns to catch more formats
           const tipPatterns = [
