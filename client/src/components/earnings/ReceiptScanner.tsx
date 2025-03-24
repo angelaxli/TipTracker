@@ -306,7 +306,7 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
                         <>
                           <div className="text-sm text-gray-600 mb-2">
                             Amount: <span className="font-medium text-gray-800">${item.amount || 'N/A'}</span>{' '}
-                            Date: <span className="font-medium text-gray-800">{item.date || 'N/A'}</span>
+                            Date: <span className="font-medium text-gray-800">{item.date ? format(new Date(item.date), "MMM d, yyyy h:mm a") : 'N/A'}</span>
                           </div>
                           <div className="space-y-2">
                             <select
