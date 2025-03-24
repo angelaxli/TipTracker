@@ -131,12 +131,41 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
     }
   };
 
-  const handleUseData = (receipt: Receipt[]) => {
-    onExtractedData(receipt);
-    toast({
-      title: "Data Applied",
-      description: "Receipt data has been applied to the form.",
-    });
+  const handleUseData = async (receipt: Receipt[]) => {
+    try {
+      // Call the API to save the tip
+      const tipData = {
+        amount: receipt[0]?.amount || 0,
+        date: receipt[0]?.date || new Date().toISOString(),
+        source: "cash",
+        notes: receipt.find(r => r.notes)?.notes || ""
+      };
+      
+      const response = await fetch('/api/tips', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(tipData),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to save tip');
+      }
+
+      onExtractedData(receipt);
+      toast({
+        title: "Tip Saved",
+        description: "Receipt data has been saved successfully.",
+      });
+    } catch (error) {
+      console.error("Error saving tip:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save tip data. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
