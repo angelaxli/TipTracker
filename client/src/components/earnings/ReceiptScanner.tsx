@@ -237,18 +237,7 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
                   )}
                 </div>
               ))}
-              {scannedReceipts.length > 0 && (
-                <Button
-                  className="w-full mt-4"
-                  variant="outline"
-                  onClick={() => {
-                    fileInputRef.current?.click();
-                  }}
-                >
-                  Scan More
-                </Button>
-              )}
-            </div>
+              </div>
           </div>
         )}
       </CardContent>
