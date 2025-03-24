@@ -63,8 +63,15 @@ export function TipsBySourceAnalysis({ tips, isLoading }: TipsBySourceAnalysisPr
     const totalAmount = sourceTips.reduce((sum, tip) => sum + parseFloat(tip.amount), 0);
     const averageAmount = count > 0 ? totalAmount / count : 0;
     
+    // Format source name by replacing underscores with spaces and capitalizing each word
+    const formatSourceName = (source: string) => {
+      return source.split('_')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ');
+    };
+
     return {
-      name: getSourceDisplayName(source),
+      name: formatSourceName(source),
       source,
       count,
       total: totalAmount,
