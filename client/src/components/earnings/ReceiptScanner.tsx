@@ -66,19 +66,22 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
             const tipMatch = section.match(/(TIP|Tip|Tp|GRATUITY|Grat)\s*[:=]?\s*\$?(\d+\.\d{2})/i);
             const dateMatch = section.match(/\b\d{1,2}\/\d{1,2}\/(?:\d{2}|\d{4})\b/);
 
-            // Only add if we found a tip
+            // Only add if we found a tip and it's greater than 0
             if (tipMatch) {
-              const date = dateMatch ? new Date(dateMatch[0]) : new Date();
-              // Set time to current time when date is from receipt
-              date.setHours(new Date().getHours());
-              date.setMinutes(new Date().getMinutes());
-              const formattedDate = format(date, "yyyy-MM-dd'T'HH:mm");
-              extractedResults.push({
-                amount: tipMatch[2],
-                date: formattedDate,
-                source: "cash",
-                notes: `Receipt ${index + 1}`
-              });
+              const tipAmount = parseFloat(tipMatch[2]);
+              if (tipAmount > 0) {
+                const date = dateMatch ? new Date(dateMatch[0]) : new Date();
+                // Set time to current time when date is from receipt
+                date.setHours(new Date().getHours());
+                date.setMinutes(new Date().getMinutes());
+                const formattedDate = format(date, "yyyy-MM-dd'T'HH:mm");
+                extractedResults.push({
+                  amount: tipAmount.toFixed(2),
+                  date: formattedDate,
+                  source: "cash",
+                  notes: `Receipt ${index + 1}`
+                });
+              }
             }
           });
 
