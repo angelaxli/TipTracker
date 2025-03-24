@@ -53,13 +53,17 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
 
           // Process each section as a potential receipt
           for (const section of sections) {
-            // Enhanced tip pattern to catch more formats
-            const tipPattern = /(?:TIP|Tip|GRAT|Gratuity|GRATUITY)[\s:]*[$]?\s*(\d+[\.,]\d{2})/gi;
+            // Use Python's exact pattern for tips
+            const tipPattern = /(TIP|Tip)\s+\$?(\d+\.\d{2})/g;
             const tipMatches = Array.from(section.matchAll(tipPattern));
-
-            // Enhanced date pattern to catch more formats
-            const datePattern = /(?:\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4}|\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\.?\s+\d{1,2},?\s+\d{4}|\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)[a-z]*\.?\s+\d{1,2}[-\/]\d{1,2}[-\/]\d{2,4})\s*(?:\d{1,2}:\d{2}(?::\d{2})?\s*(?:AM|PM|am|pm)?)?/g;
+            
+            // Use Python's exact pattern for dates
+            const datePattern = /\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s\d{2}\/\d{2}\/\d{4}\s\d{1,2}:\d{2}\s?(?:AM|PM|am|pm)\b/g;
             const dates = Array.from(section.matchAll(datePattern))
+              .map(match => {
+                // Normalize AM/PM exactly like Python code
+                return match[0].replace(/\s?([ap])m\b/i, (_, p1) => ` ${p1.toUpperCase()}M`);
+              });
               .map(match => {
                 try {
                   const dateStr = match[0].trim();
@@ -71,20 +75,12 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
               })
               .filter(date => date !== null);
 
-            // Match tips with dates
+            // Match tips with dates exactly like Python code
             for (let i = 0; i < tipMatches.length; i++) {
-              let tipAmount = '';
-              // Extract tip amount from either capture group
-              if (tipMatches[i][1]) {
-                tipAmount = tipMatches[i][1].replace(',', '.');
-              } else if (tipMatches[i][0]) {
-                // Extract amount from full match if needed
-                tipAmount = tipMatches[i][0].match(/\d+\.?\d*/)?.[0] || '';
-              }
-
-              // Clean up tip amount
-              tipAmount = tipAmount.replace(/[^\d.]/g, '');
-
+              // Extract tip amount from capture group like Python code
+              const tipAmount = tipMatches[i][2];  // Using group 2 which contains just the amount
+              
+              // Get corresponding date if available
               const date = dates[i] || dates[0] || new Date().toISOString();
 
               if (tipAmount && !isNaN(parseFloat(tipAmount))) {
