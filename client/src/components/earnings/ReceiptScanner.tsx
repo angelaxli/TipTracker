@@ -11,7 +11,7 @@ interface ReceiptScannerProps {
 
 export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
   const [isScanning, setIsScanning] = useState(false);
-  const [scannedReceipts, setScannedReceipts] = useState<Array<{ amount: string; date: string }[]>([]);
+  const [scannedReceipts, setScannedReceipts] = useState<{ amount: string; date: string }[][]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -65,6 +65,10 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
 
           // If no sections were found with data, try analyzing the whole text as one receipt
           if (extractedResults.length === 0) {
+            // Redefining these here to make them available in this scope
+            const tipRegex = /(?:tip|gratuity|tip amount|grat)(?:\s*[:\.]\s*|\s+)\$?(\d+\.\d{2})/i;
+            const dateRegex = /(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})|([A-Z][a-z]{2}\s\d{1,2},?\s\d{4})/g;
+            
             const tipMatch = text.match(tipRegex);
             const tipAmount = tipMatch ? tipMatch[1] : "";
             const dates = Array.from(text.matchAll(dateRegex)).map(match => match[0]);
@@ -82,7 +86,8 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
         })
       );
 
-      setScannedReceipts(results.flat().filter(r => r.amount || r.date));
+      // Make sure we're setting the state with an array of arrays
+      setScannedReceipts(results.filter(receiptArray => receiptArray.some(r => r.amount || r.date)));
 
       toast({
         title: "Scan Complete",

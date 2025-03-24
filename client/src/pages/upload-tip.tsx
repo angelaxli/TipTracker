@@ -54,26 +54,30 @@ export default function UploadTip() {
     notes: "",
   };
 
-  // Handle extracted data from receipt scanner (this part is kept)
-  const handleExtractedData = (data: { amount: string; date: string }) => {
-    const updatedData = { ...formData };
+  // Handle extracted data from receipt scanner
+  const handleExtractedData = (data: { amount: string; date: string }[]) => {
+    // Use the first item if available
+    if (data.length > 0) {
+      const firstItem = data[0];
+      const updatedData = { ...formData };
 
-    if (data.amount) {
-      updatedData.amount = data.amount;
-    }
-
-    if (data.date) {
-      try {
-        const parsedDate = new Date(data.date);
-        if (!isNaN(parsedDate.getTime())) {
-          updatedData.date = format(parsedDate, "yyyy-MM-dd'T'HH:mm");
-        }
-      } catch (e) {
-        // If date parsing fails, keep the existing date
+      if (firstItem.amount) {
+        updatedData.amount = firstItem.amount;
       }
-    }
 
-    setFormData(updatedData);
+      if (firstItem.date) {
+        try {
+          const parsedDate = new Date(firstItem.date);
+          if (!isNaN(parsedDate.getTime())) {
+            updatedData.date = format(parsedDate, "yyyy-MM-dd'T'HH:mm");
+          }
+        } catch (e) {
+          // If date parsing fails, keep the existing date
+        }
+      }
+
+      setFormData(updatedData);
+    }
   };
 
 
