@@ -51,7 +51,7 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
 
           // Split text into potential receipt sections
           // Split into receipts based on large gaps and common receipt separators
-          const sections = text.split(/(?:\n{4,}|={3,}|\*{3,}|-{3,}|\bTOTAL\b.*\n{2,})/gi)
+          const sections = text.split(/(?:\n{4,}|={3,}|\*{3,}|- {3,}|\bTOTAL\b.*\n{2,})/gi)
             .map(section => section.trim())
             .filter(section => section.length > 0);
 
@@ -103,7 +103,7 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
           sections.forEach(section => {
             let tipAmount: string | null = null;
             let receiptDate: string | null = null;
-            
+
             // Find all tip amounts in this section
             for (const pattern of tipPatterns) {
               const matches = Array.from(section.matchAll(pattern));
@@ -350,7 +350,12 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
                               variant="outline"
                               size="sm"
                               onClick={async () => {
-                                await handleUseData([item]);
+                                // Ensure date is in correct ISO format
+                                const tipToSave = {
+                                  ...item,
+                                  date: new Date(item.date).toISOString()
+                                };
+                                await handleUseData([tipToSave]);
                                 setSavedReceipts([...savedReceipts, `${index}-${i}`]);
                               }}
                               disabled={!item.amount || !item.date}
