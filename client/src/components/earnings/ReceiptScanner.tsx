@@ -185,25 +185,30 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
     try {
       for (const item of receipt) {
         // Clean and validate the tip amount
-        const cleanAmount = item.amount?.replace(/[^\d.]/g, '');
-        const tipAmount = cleanAmount ? parseFloat(cleanAmount) : 0;
+        const amount = typeof item.amount === 'string' 
+          ? parseFloat(item.amount.replace(/[^\d.]/g, ''))
+          : parseFloat(String(item.amount));
 
-        if (!cleanAmount || isNaN(tipAmount) || tipAmount <= 0) {
-          throw new Error("Please enter a valid tip amount greater than 0");
+        if (isNaN(amount) || amount <= 0) {
+          console.error("Invalid amount:", item.amount);
+          continue;
         }
 
         const tipDate = new Date(item.date || new Date());
         if (isNaN(tipDate.getTime())) {
-          throw new Error("Invalid date format");
+          console.error("Invalid date:", item.date);
+          continue;
         }
 
         const tipData = {
-          amount: parseFloat(tipAmount.toFixed(2)),
-          date: tipDate.toISOString(),
+          amount: parseFloat(amount.toFixed(2)),
+          date: format(tipDate, "yyyy-MM-dd'T'HH:mm"),
           source: item.source || "cash",
-          notes: item.notes || "",
+          notes: item.notes || "Scanned from receipt",
           userId: 1
         };
+
+        console.log("Saving tip data:", tipData);
 
         const response = await fetch('/api/tips', {
           method: 'POST',
@@ -215,8 +220,12 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
 
         if (!response.ok) {
           const errorData = await response.json();
+          console.error("Failed to save tip:", errorData);
           throw new Error(errorData.message || 'Failed to save tip');
         }
+
+        const savedTip = await response.json();
+        console.log("Successfully saved tip:", savedTip);
       }
 
       await queryClient.invalidateQueries({ queryKey: ['/api/tips'] });
