@@ -49,15 +49,30 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
           console.log("Confidence score:", result.data.confidence);
 
           // Split text into potential receipt sections
-          const sections = text.split(/(?:\n{3,}|={3,}|\*{3,}|-{3,})/g)
+          // Split into receipts based on large gaps and common receipt separators
+          const sections = text.split(/(?:\n{4,}|={3,}|\*{3,}|-{3,}|\bTOTAL\b.*\n{2,})/gi)
             .map(section => section.trim())
             .filter(section => section.length > 0);
 
-          // Debug: Log full text for analysis
-          console.log("Processing text sections:", sections);
+          console.log("Detected receipt sections:", sections);
 
           // Process text to find all tips and dates across sections
           const extractedResults: Receipt[] = [];
+
+          // Process each section as a separate receipt
+          sections.forEach((section, index) => {
+            const tipMatch = section.match(/(TIP|Tip|GRATUITY|Grat)\s*[:=]?\s*\$?(\d+\.\d{2})/i);
+            const dateMatch = section.match(/\b\d{1,2}\/\d{1,2}\/(?:\d{2}|\d{4})\b/);
+
+            if (tipMatch || dateMatch) {
+              extractedResults.push({
+                amount: tipMatch ? tipMatch[2] : "0.00",
+                date: dateMatch ? new Date(dateMatch[0]).toISOString() : new Date().toISOString(),
+                source: "cash",
+                notes: `Receipt ${index + 1}`
+              });
+            }
+          });
 
           // Enhanced patterns to catch more formats
           const tipPatterns = [
