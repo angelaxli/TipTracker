@@ -54,19 +54,15 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
 
           // Process each section as a potential receipt
           for (const section of sections) {
-            const tipRegex = /(?:tip|gratuity|grat\.?|tip amount)[\s:]*\$?\s*(\d+\.\d{2})/gi;
-            const tipMatches = Array.from(section.matchAll(tipRegex));
+            // Using similar pattern to the Python code
+            const tipPattern = /(TIP|Tip)\s+\$?(\d+\.\d{2})/g;
+            const tipMatches = Array.from(section.matchAll(tipPattern));
             
-            const dateRegex = /(?:\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s)?(?:\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}|\d{4}[\/\-]\d{1,2}[\/\-]\d{1,2})\s*(?:\d{1,2}:\d{2}\s*(?:AM|PM|am|pm)?)?/g;
-            const dates = Array.from(section.matchAll(dateRegex))
-              .map(match => match[0].trim())
-              .filter(dateStr => {
-                try {
-                  const parsedDate = new Date(dateStr);
-                  return !isNaN(parsedDate.getTime());
-                } catch {
-                  return false;
-                }
+            const datePattern = /\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s\d{2}\/\d{2}\/\d{4}\s\d{1,2}:\d{2}\s?(?:AM|PM|am|pm)\b/g;
+            const dates = Array.from(section.matchAll(datePattern))
+              .map(match => {
+                // Normalize AM/PM similar to Python code
+                return match[0].replace(/\s?([ap])m\b/i, (_, p1) => ` ${p1.toUpperCase()}M`);
               });
 
             // Match tips with dates
