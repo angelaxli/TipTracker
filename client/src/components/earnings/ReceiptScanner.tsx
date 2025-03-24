@@ -44,6 +44,10 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
           const result = await Tesseract.recognize(file, "eng");
           const text = result.data.text;
 
+          // Debug: Log the full text being read
+          console.log("Full text extracted from receipt:", text);
+          console.log("Confidence score:", result.data.confidence);
+
           // Split text into potential receipt sections
           const sections = text.split(/(?:\n{3,}|={3,}|\*{3,}|-{3,})/g)
             .map(section => section.trim())
