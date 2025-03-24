@@ -40,28 +40,48 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
           const result = await Tesseract.recognize(file, "eng");
           const text = result.data.text;
 
-          // Split text into potential receipt sections based on common delimiters
-          const receiptSections = text.split(/(?:\n\s*\n|\*{3,}|\-{3,}|\={3,})/g)
+          // Split text into potential receipt sections based on common delimiters and receipt markers
+          const receiptSections = text.split(/(?:\n\s*\n|\*{3,}|\-{3,}|\={3,}|(?=\b(?:check|receipt|invoice|order)\b))/gi)
             .filter(section => section.trim().length > 0);
 
           const extractedResults: Receipt[] = [];
 
           for (const section of receiptSections) {
-            // Extract tip amount
-            const tipRegex = /(?:tip|gratuity|tip amount|grat)(?:\s*[:\.]\s*|\s+)\$?(\d+\.\d{2})/i;
-            const tipMatch = section.match(tipRegex);
-            const tipAmount = tipMatch ? tipMatch[1] : "";
-
-            // Extract date
+            // Find all tip amounts in the section
+            const tipRegex = /(?:tip|gratuity|tip amount|grat)(?:\s*[:\.]\s*|\s+)\$?(\d+\.\d{2})/gi;
+            const tipMatches = Array.from(section.matchAll(tipRegex));
+            
+            // Find all dates in the section
             const dateRegex = /(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})|([A-Z][a-z]{2}\s\d{1,2},?\s\d{4})/g;
             const dates = Array.from(section.matchAll(dateRegex)).map(match => match[0]);
-            const firstDate = dates.length > 0 ? dates[0] : "";
 
-            // Only add if we found either amount or date
-            if (tipAmount || firstDate) {
-              extractedResults.push({
-                amount: tipAmount,
-                date: firstDate,
+            // Try to find time if available
+            const timeRegex = /(\d{1,2}:\d{2}(?:\s*[AaPp][Mm])?)/g;
+            const times = Array.from(section.matchAll(timeRegex)).map(match => match[0]);
+
+            // For each tip amount found, create a receipt entry
+            tipMatches.forEach((tipMatch, index) => {
+              const tipAmount = tipMatch[1];
+              // Use corresponding date and time if available, otherwise use the first found
+              const date = dates[index] || dates[0] || "";
+              const time = times[index] || times[0] || "";
+              
+              if (tipAmount) {
+                extractedResults.push({
+                  amount: tipAmount,
+                  date: date + (time ? " " + time : ""),
+                });
+              }
+            });
+
+            // If no tips were found but we have dates, add placeholder entries
+            if (tipMatches.length === 0 && dates.length > 0) {
+              dates.forEach((date, index) => {
+                const time = times[index] || times[0] || "";
+                extractedResults.push({
+                  amount: "",
+                  date: date + (time ? " " + time : ""),
+                });
               });
             }
           }
