@@ -276,26 +276,30 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
 
             <div className="space-y-3">
               {scannedReceipts.map((receipt: Receipt[], index: number) => (
-                <div key={index} className="space-y-2 p-2 bg-gray-50 rounded">
-                  {savedReceipts.includes(index) ? (
-                    <div className="text-center py-4">
-                      <p className="text-green-600 font-medium mb-2">Tip Saved!</p>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          setScannedReceipts(scannedReceipts.filter((_, i) => i !== index));
-                          setNotes(notes.filter((_, i) => i !== index));
-                          setSavedReceipts(savedReceipts.filter(i => i !== index));
-                        }}
-                      >
-                        Clear
-                      </Button>
-                    </div>
-                  ) : (
-                    <>
-                      {receipt.map((item: Receipt, i: number) => (
-                        <div key={i} className="border-b border-gray-200 pb-4 mb-4 last:border-0">
+                <div key={index} className="space-y-4 p-2 bg-gray-50 rounded">
+                  {receipt.map((item: Receipt, i: number) => (
+                    <div key={i} className="border rounded p-4 bg-white">
+                      {savedReceipts.includes(`${index}-${i}`) ? (
+                        <div className="text-center py-2">
+                          <p className="text-green-600 font-medium">Tip Saved!</p>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              const newReceipts = [...scannedReceipts];
+                              newReceipts[index] = receipt.filter((_, idx) => idx !== i);
+                              if (newReceipts[index].length === 0) {
+                                newReceipts.splice(index, 1);
+                              }
+                              setScannedReceipts(newReceipts);
+                              setSavedReceipts(savedReceipts.filter(id => id !== `${index}-${i}`));
+                            }}
+                          >
+                            Clear
+                          </Button>
+                        </div>
+                      ) : (
+                        <>
                           <div className="text-sm text-gray-600 mb-2">
                             Amount: <span className="font-medium text-gray-800">${item.amount || 'N/A'}</span>{' '}
                             Date: <span className="font-medium text-gray-800">{item.date || 'N/A'}</span>
@@ -332,36 +336,37 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
                               }}
                             />
                           </div>
-                        </div>
-                      ))}
-                      <div className="flex justify-end space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setScannedReceipts(scannedReceipts.filter((_, i) => i !== index));
-                            setNotes(notes.filter((_, i) => i !== index));
-                          }}
-                        >
-                          Cancel
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={async () => {
-                            // Save each receipt separately
-                            for (const item of receipt) {
-                              await handleUseData([item]);
-                            }
-                            setSavedReceipts([...savedReceipts, index]);
-                          }}
-                          disabled={!receipt.some((r: Receipt) => r.amount || r.date)}
-                        >
-                          Save Tips
-                        </Button>
-                      </div>
-                    </>
-                  )}
+                          <div className="flex justify-end space-x-2 mt-4">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                const newReceipts = [...scannedReceipts];
+                                newReceipts[index] = receipt.filter((_, idx) => idx !== i);
+                                if (newReceipts[index].length === 0) {
+                                  newReceipts.splice(index, 1);
+                                }
+                                setScannedReceipts(newReceipts);
+                              }}
+                            >
+                              Cancel
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={async () => {
+                                await handleUseData([item]);
+                                setSavedReceipts([...savedReceipts, `${index}-${i}`]);
+                              }}
+                              disabled={!item.amount || !item.date}
+                            >
+                              Save Tip
+                            </Button>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  ))}
                 </div>
               ))}
             </div>
