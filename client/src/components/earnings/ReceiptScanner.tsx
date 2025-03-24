@@ -3,6 +3,8 @@ import { Upload } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
+import { useNavigate } from "wouter";
+import { queryClient } from "@/lib/queryClient";
 import Tesseract from "tesseract.js";
 
 // Define a Receipt type for better type checking
@@ -133,12 +135,14 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
 
   const handleUseData = async (receipt: Receipt[]) => {
     try {
-      for (let i = 0; i < receipt.length; i++) {
+      const navigate = useNavigate();
+      
+      for (const item of receipt) {
         const tipData = {
-          amount: Number(receipt[i]?.amount) || 0,
-          date: new Date(receipt[i]?.date || new Date()).toISOString(),
+          amount: Number(item.amount) || 0,
+          date: new Date(item.date || new Date()).toISOString(),
           source: "cash",
-          notes: notes[i] || "",
+          notes: item.notes || "",
           userId: 1
         };
         
