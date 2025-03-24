@@ -54,8 +54,11 @@ export default function UploadTip() {
     notes: "",
   };
 
+  // Define Receipt type to match the one in ReceiptScanner
+  type Receipt = { amount: string; date: string };
+  
   // Handle extracted data from receipt scanner
-  const handleExtractedData = (data: { amount: string; date: string }[]) => {
+  const handleExtractedData = (data: Receipt[]) => {
     // Use the first item if available
     if (data.length > 0) {
       const firstItem = data[0];

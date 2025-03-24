@@ -5,13 +5,16 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import Tesseract from "tesseract.js";
 
+// Define a Receipt type for better type checking
+type Receipt = { amount: string; date: string };
+
 interface ReceiptScannerProps {
-  onExtractedData: (data: { amount: string; date: string }[]) => void;
+  onExtractedData: (data: Receipt[]) => void;
 }
 
 export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
   const [isScanning, setIsScanning] = useState(false);
-  const [scannedReceipts, setScannedReceipts] = useState<{ amount: string; date: string }[][]>([]);
+  const [scannedReceipts, setScannedReceipts] = useState<Receipt[][]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
@@ -41,7 +44,7 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
           const receiptSections = text.split(/(?:\n\s*\n|\*{3,}|\-{3,}|\={3,})/g)
             .filter(section => section.trim().length > 0);
 
-          const extractedResults = [];
+          const extractedResults: Receipt[] = [];
 
           for (const section of receiptSections) {
             // Extract tip amount
@@ -87,7 +90,9 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
       );
 
       // Make sure we're setting the state with an array of arrays
-      setScannedReceipts(results.filter(receiptArray => receiptArray.some(r => r.amount || r.date)));
+      setScannedReceipts(results.filter((receiptArray: Receipt[]) => 
+        receiptArray.some((r: Receipt) => r.amount || r.date)
+      ));
 
       toast({
         title: "Scan Complete",
@@ -104,7 +109,7 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
     }
   };
 
-  const handleUseData = (receipt: { amount: string; date: string }[]) => {
+  const handleUseData = (receipt: Receipt[]) => {
     onExtractedData(receipt);
     toast({
       title: "Data Applied",
@@ -146,10 +151,10 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
             <h3 className="font-medium text-gray-800 mb-2">Extracted Information</h3>
 
             <div className="space-y-3">
-              {scannedReceipts.map((receipt, index) => (
+              {scannedReceipts.map((receipt: Receipt[], index: number) => (
                 <div key={index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
                   <div className="space-y-1">
-                    {receipt.map((item, i) => (
+                    {receipt.map((item: Receipt, i: number) => (
                       <div key={i} className="text-sm text-gray-600">
                         Amount: <span className="font-medium text-gray-800">${item.amount || 'N/A'}</span>{' '}
                         Date: <span className="font-medium text-gray-800">{item.date || 'N/A'}</span>
@@ -160,7 +165,7 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
                     variant="outline"
                     size="sm"
                     onClick={() => handleUseData(receipt)}
-                    disabled={!receipt.some(r => r.amount || r.date)}
+                    disabled={!receipt.some((r: Receipt) => r.amount || r.date)}
                   >
                     Use Data
                   </Button>
