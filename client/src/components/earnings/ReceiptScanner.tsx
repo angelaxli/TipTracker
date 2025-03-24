@@ -351,9 +351,14 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
                               size="sm"
                               onClick={async () => {
                                 // Ensure date is in correct ISO format
+                                const tipDate = new Date(item.date);
+                                if (isNaN(tipDate.getTime())) {
+                                  throw new Error("Invalid date format");
+                                }
                                 const tipToSave = {
                                   ...item,
-                                  date: new Date(item.date).toISOString()
+                                  date: tipDate.toISOString(),
+                                  amount: parseFloat(item.amount)
                                 };
                                 await handleUseData([tipToSave]);
                                 setSavedReceipts([...savedReceipts, `${index}-${i}`]);
