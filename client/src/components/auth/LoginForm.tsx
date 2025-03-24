@@ -72,7 +72,7 @@ export function LoginForm() {
     setTimeout(() => {
       toast({
         title: "Demo login successful",
-        description: "Welcome to TipTracker!",
+        description: "Welcome to TipTracker, Sarah!",
       });
       setLocation("/");
       setIsLoading(false);
@@ -139,7 +139,7 @@ export function LoginForm() {
           className="w-full flex items-center justify-center"
           disabled={isLoading}
         >
-          Continue as Demo User
+          Continue as Sarah (Restaurant Waitress)
         </Button>
       </CardContent>
       <CardFooter className="flex justify-center">
