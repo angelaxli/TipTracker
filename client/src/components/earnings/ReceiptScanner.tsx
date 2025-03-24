@@ -53,31 +53,37 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
             .map(section => section.trim())
             .filter(section => section.length > 0);
 
+          // Debug: Log full text for analysis
+          console.log("Processing text sections:", sections);
+
           // Process text to find all tips and dates across sections
           const extractedResults: Receipt[] = [];
 
           // Enhanced patterns to catch more formats
           const tipPatterns = [
-            /(TIP|Tip|GRATUITY)\s*[:=]?\s*\$?(\d+\.\d{2})/g,
-            /(?:^|\s)\$?(\d+\.\d{2})\s*(?:TIP|Tip|GRATUITY)/g
+            /(TIP|Tip|GRATUITY|Grat)\s*[:=]?\s*\$?(\d+\.\d{2})/g,
+            /(?:^|\s)\$?(\d+\.\d{2})\s*(?:TIP|Tip|GRATUITY|Grat)/g,
+            /TIP\s*\$?(\d+\.\d{2})/i
           ];
 
           const datePatterns = [
             /\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s\d{2}\/\d{2}\/\d{4}\s\d{1,2}:\d{2}\s?(?:AM|PM|am|pm)\b/g,
             /\b\d{2}\/\d{2}\/\d{4}\s\d{1,2}:\d{2}\s?(?:AM|PM|am|pm)\b/g,
-            /\b\d{1,2}\/\d{1,2}\/\d{2,4}\b/g
+            /\b\d{1,2}\/\d{1,2}\/(?:\d{2}|\d{4})\b/g,
+            /\b(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{1,2},?\s+\d{4}\b/gi
           ];
 
-          // Process each section for better accuracy
+          // Process each section independently for better multi-receipt handling
           sections.forEach(section => {
             let tipAmount: string | null = null;
             let receiptDate: string | null = null;
-
-            // Find tip amount using multiple patterns
+            
+            // Find all tip amounts in this section
             for (const pattern of tipPatterns) {
-              const match = section.match(pattern);
-              if (match) {
-                // Extract the amount, handling both pattern types
+              const matches = Array.from(section.matchAll(pattern));
+              if (matches.length > 0) {
+                // Take the last match in case of multiple matches
+                const match = matches[matches.length - 1];
                 tipAmount = match[2] || match[1];
                 break;
               }
