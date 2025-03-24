@@ -61,15 +61,21 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
 
           // Process each section as a separate receipt
           sections.forEach((section, index) => {
-            const tipMatch = section.match(/(TIP|Tip|GRATUITY|Grat)\s*[:=]?\s*\$?(\d+\.\d{2})/i);
-            const dateMatch = section.match(/\b\d{1,2}\/\d{1,2}\/(?:\d{2}|\d{4})\b/);
+            // Find all tip matches in the section
+            const tipMatches = Array.from(section.matchAll(/(TIP|Tip|GRATUITY|Grat)\s*[:=]?\s*\$?(\d+\.\d{2})/gi));
+            const dateMatches = Array.from(section.matchAll(/\b\d{1,2}\/\d{1,2}\/(?:\d{2}|\d{4})\b/g));
 
-            if (tipMatch || dateMatch) {
-              extractedResults.push({
-                amount: tipMatch ? tipMatch[2] : "0.00",
-                date: dateMatch ? new Date(dateMatch[0]).toISOString() : new Date().toISOString(),
-                source: "cash",
-                notes: `Receipt ${index + 1}`
+            // Add each tip found in the section
+            if (tipMatches.length > 0) {
+              tipMatches.forEach((tipMatch, tipIndex) => {
+                extractedResults.push({
+                  amount: tipMatch[2],
+                  date: dateMatches[tipIndex] 
+                    ? new Date(dateMatches[tipIndex][0]).toISOString() 
+                    : new Date().toISOString(),
+                  source: "cash",
+                  notes: `Receipt ${index + 1} - Tip ${tipIndex + 1}`
+                });
               });
             }
           });
