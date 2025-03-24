@@ -294,43 +294,46 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
                     </div>
                   ) : (
                     <>
-                      <div className="space-y-1">
-                        {receipt.map((item: Receipt, i: number) => (
-                          <div key={i} className="text-sm text-gray-600">
+                      {receipt.map((item: Receipt, i: number) => (
+                        <div key={i} className="border-b border-gray-200 pb-4 mb-4 last:border-0">
+                          <div className="text-sm text-gray-600 mb-2">
                             Amount: <span className="font-medium text-gray-800">${item.amount || 'N/A'}</span>{' '}
                             Date: <span className="font-medium text-gray-800">{item.date || 'N/A'}</span>
                           </div>
-                        ))}
-                      </div>
-                      <div className="space-y-2">
-                        <select
-                          className="w-full p-2 text-sm border rounded"
-                          value={receipt[0]?.source || "cash"}
-                          onChange={(e) => {
-                            const newReceipts = [...scannedReceipts];
-                            newReceipts[index] = receipt.map(item => ({
-                              ...item,
-                              source: e.target.value
-                            }));
-                            setScannedReceipts(newReceipts);
-                          }}
-                        >
-                          <option value="cash">Cash</option>
-                          <option value="venmo">Venmo</option>
-                          <option value="credit_card">Credit Card</option>
-                          <option value="other">Other</option>
-                        </select>
-                        <textarea
-                          className="w-full p-2 text-sm border rounded"
-                          placeholder="Add notes about this tip..."
-                          value={notes[index] || ''}
-                          onChange={(e) => {
-                            const newNotes = [...notes];
-                            newNotes[index] = e.target.value;
-                            setNotes(newNotes);
-                          }}
-                        />
-                      </div>
+                          <div className="space-y-2">
+                            <select
+                              className="w-full p-2 text-sm border rounded"
+                              value={item.source || "cash"}
+                              onChange={(e) => {
+                                const newReceipts = [...scannedReceipts];
+                                newReceipts[index][i] = {
+                                  ...item,
+                                  source: e.target.value
+                                };
+                                setScannedReceipts(newReceipts);
+                              }}
+                            >
+                              <option value="cash">Cash</option>
+                              <option value="venmo">Venmo</option>
+                              <option value="credit_card">Credit Card</option>
+                              <option value="other">Other</option>
+                            </select>
+                            <textarea
+                              className="w-full p-2 text-sm border rounded"
+                              placeholder="Add notes about this tip..."
+                              value={item.notes || ''}
+                              onChange={(e) => {
+                                const newReceipts = [...scannedReceipts];
+                                newReceipts[index][i] = {
+                                  ...item,
+                                  notes: e.target.value
+                                };
+                                setScannedReceipts(newReceipts);
+                              }}
+                            />
+                          </div>
+                        </div>
+                      ))}
                       <div className="flex justify-end space-x-2">
                         <Button
                           variant="outline"
@@ -345,13 +348,16 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => {
-                            handleUseData([...receipt, { notes: notes[index] || '' }]);
+                          onClick={async () => {
+                            // Save each receipt separately
+                            for (const item of receipt) {
+                              await handleUseData([item]);
+                            }
                             setSavedReceipts([...savedReceipts, index]);
                           }}
                           disabled={!receipt.some((r: Receipt) => r.amount || r.date)}
                         >
-                          Save Tip
+                          Save Tips
                         </Button>
                       </div>
                     </>
