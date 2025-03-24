@@ -136,10 +136,12 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
   const handleUseData = async (receipt: Receipt[]) => {
     try {
       for (const item of receipt) {
-        // Format data to match TipForm
-        const tipAmount = parseFloat(item.amount);
-        if (isNaN(tipAmount) || tipAmount <= 0) {
-          throw new Error("Amount must be a positive number");
+        // Clean and validate the tip amount
+        const cleanAmount = item.amount?.replace(/[^\d.]/g, '');
+        const tipAmount = cleanAmount ? parseFloat(cleanAmount) : 0;
+        
+        if (!cleanAmount || isNaN(tipAmount) || tipAmount <= 0) {
+          throw new Error("Please enter a valid tip amount greater than 0");
         }
 
         const tipDate = new Date(item.date || new Date());
@@ -148,7 +150,7 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
         }
 
         const tipData = {
-          amount: tipAmount,
+          amount: parseFloat(tipAmount.toFixed(2)),
           date: tipDate.toISOString(),
           source: item.source || "cash",
           notes: item.notes || "",
