@@ -226,9 +226,10 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
 
         const savedTip = await response.json();
         console.log("Successfully saved tip:", savedTip);
+        
+        // Invalidate immediately after each successful save
+        await queryClient.invalidateQueries({ queryKey: ['/api/tips'] });
       }
-
-      await queryClient.invalidateQueries({ queryKey: ['/api/tips'] });
 
       onExtractedData(receipt);
       toast({
