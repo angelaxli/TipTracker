@@ -49,8 +49,6 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
             .map(section => section.trim())
             .filter(section => section.length > 0);
 
-          const extractedResults: Receipt[] = [];
-
           // Process text to find all tips and dates across sections
           const tipPattern = /(TIP|Tip)\s+\$?(\d+\.\d{2})/g;
           const datePattern = /\b(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\s\d{2}\/\d{2}\/\d{4}\s\d{1,2}:\d{2}\s?(?:AM|PM|am|pm)\b/g;
