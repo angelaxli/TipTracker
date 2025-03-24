@@ -1,3 +1,4 @@
+
 import { useState, useRef } from "react";
 import { Upload } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -5,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import Tesseract from "tesseract.js";
+import { queryClient } from "@/lib/queryClient";
 
 // Define a Receipt type for better type checking
-type Receipt = { amount: string; date: string };
+type Receipt = { amount: string; date: string; source?: string; notes?: string };
 
 interface ReceiptScannerProps {
   onExtractedData: (data: Receipt[]) => void;
@@ -20,7 +22,6 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
   const [savedReceipts, setSavedReceipts] = useState<number[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
-  const location = useLocation();
 
   const handleUploadClick = () => {
     if (fileInputRef.current) {
@@ -68,28 +69,14 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
             }
           });
 
-            // If no tips were found but we have dates, add placeholder entries
-            if (tipMatches.length === 0 && dates.length > 0) {
-              dates.forEach((date, index) => {
-                const time = times[index] || times[0] || "";
-                extractedResults.push({
-                  amount: "",
-                  date: date + (time ? " " + time : ""),
-                });
-              });
-            }
-          }
-
-          // If no sections were found with data, try analyzing the whole text as one receipt
+          // If no results were found, try analyzing the whole text
           if (extractedResults.length === 0) {
-            // Redefining these here to make them available in this scope
-            const tipRegex = /(?:tip|gratuity|tip amount|grat)(?:\s*[:\.]\s*|\s+)\$?(\d+\.\d{2})/i;
-            const dateRegex = /(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})|([A-Z][a-z]{2}\s\d{1,2},?\s\d{4})/g;
+            const simpleRegex = /(?:tip|gratuity|tip amount|grat)(?:\s*[:\.]\s*|\s+)\$?(\d+\.\d{2})/i;
+            const simpleDateRegex = /(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})|([A-Z][a-z]{2}\s\d{1,2},?\s\d{4})/g;
 
-            const tipMatch = text.match(tipRegex);
+            const tipMatch = text.match(simpleRegex);
             const tipAmount = tipMatch ? tipMatch[1] : "";
-            const dates = Array.from(text.matchAll(dateRegex)).map(match => match[0]);
-            const firstDate = dates.length > 0 ? dates[0] : "";
+            const firstDate = text.match(simpleDateRegex)?.[0] || "";
 
             if (tipAmount || firstDate) {
               extractedResults.push({
@@ -103,10 +90,7 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
         })
       );
 
-      // Make sure we're setting the state with an array of arrays
-      setScannedReceipts(results.filter((receiptArray: Receipt[]) => 
-        receiptArray.some((r: Receipt) => r.amount || r.date)
-      ));
+      setScannedReceipts(results.filter(receiptArray => receiptArray.some(r => r.amount || r.date)));
 
       toast({
         title: "Scan Complete",
@@ -169,15 +153,15 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
         description: "Receipt data has been saved successfully.",
       });
 
-      // After successful save, redirect to earnings log
+      // Redirect after successful save
       setTimeout(() => {
         window.location.href = '/earnings-log';
       }, 1000);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving tip:", error);
       toast({
         title: "Error",
-        description: `Failed to save tip data: ${error.message}. Please try again.`,
+        description: error.message || "Failed to save tip data. Please try again.",
         variant: "destructive"
       });
     }
