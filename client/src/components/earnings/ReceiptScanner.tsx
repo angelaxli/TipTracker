@@ -79,7 +79,7 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
                   amount: tipAmount.toFixed(2),
                   date: formattedDate,
                   source: "cash",
-                  notes: `Receipt ${index + 1}`
+                  notes: ""
                 });
               }
             }
@@ -138,7 +138,7 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
                 amount: tipAmount,
                 date: receiptDate || new Date().toISOString(),
                 source: "cash", // Default source
-                notes: "Scanned from receipt"
+                notes: ""
               });
             }
           });
@@ -226,7 +226,7 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
 
         const savedTip = await response.json();
         console.log("Successfully saved tip:", savedTip);
-        
+
         // Invalidate immediately after each successful save
         await queryClient.invalidateQueries({ queryKey: ['/api/tips'] });
       }
@@ -366,12 +366,12 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
                                   // If date parsing fails, use current date/time
                                   tipDate = new Date();
                                 }
-                                
+
                                 // Parse amount correctly
                                 const amount = typeof item.amount === 'string' 
                                   ? parseFloat(item.amount.replace(/[^\d.]/g, ''))
                                   : parseFloat(String(item.amount));
-                                
+
                                 if (isNaN(amount)) {
                                   throw new Error("Invalid amount format");
                                 }
