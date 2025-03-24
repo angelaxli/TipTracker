@@ -79,8 +79,10 @@ export function TipForm({ initialData }: TipFormProps) {
         throw new Error("Invalid date format");
       }
       
-      const method = initialData ? "PUT" : "POST";
-      const endpoint = initialData ? `/api/tips/${initialData.id}` : "/api/tips";
+      // Use demo user ID (1) for this version
+      const tipId = initialData?.id;
+      const method = tipId ? "PUT" : "POST";
+      const endpoint = tipId ? `/api/tips/${tipId}` : "/api/tips";
       const response = await fetch(endpoint, {
         method,
         headers: {
