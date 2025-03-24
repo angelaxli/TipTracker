@@ -226,11 +226,6 @@ export function ReceiptScanner({ onExtractedData }: ReceiptScannerProps) {
         title: "Tip Saved",
         description: "Receipt data has been saved successfully.",
       });
-
-      // Redirect after successful save
-      setTimeout(() => {
-        window.location.href = '/earnings-log';
-      }, 1000);
     } catch (error: any) {
       console.error("Error saving tip:", error);
       toast({
